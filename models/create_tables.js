@@ -14,75 +14,113 @@ function sendQueryOrCommand(db, query, params = []) {
 }
 
 async function create_tables(db) {
-  // These tables should already exist from prior homeworks.
-  // We include them in case you need to recreate the database.
+  // TODO: define the names table (or use previous one)?.
+  var qa = db.create_tables('...');
 
-  // You'll need to define the names table.
-  // var qa = db.create_tables('...');
-
-  // var qb = db.create_tables('CREATE TABLE IF NOT EXISTS titles ( \
-  //   tconst VARCHAR(10) PRIMARY KEY, \
-  //   titleType varchar(255), \
-  //   primaryTitle VARCHAR(255), \
-  //   originalTitle VARCHAR(255), \
-  //   startYear varchar(4), \
-  //   endYear varchar(4), \
-  //   genres VARCHAR(255) \
-  //   );')
-
-  //   var qc = db.create_tables('CREATE TABLE IF NOT EXISTS principals ( \
-  //     tconst VARCHAR(10), \
-  //     ordering int, \
-  //     nconst VARCHAR(10), \
-  //     category VARCHAR(255), \
-  //     job VARCHAR(255), \
-  //     characters VARCHAR(255), \
-  //     FOREIGN KEY (tconst) REFERENCES titles(tconst), \
-  //     FOREIGN KEY (nconst) REFERENCES names(nconst_short) \
-  //     );')
-
-  //   var qd = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \
-  //     person VARCHAR(10), \
-  //     recommendation VARCHAR(10), \
-  //     strength int, \
-  //     FOREIGN KEY (person) REFERENCES names(nconst_short), \
-  //     FOREIGN KEY (recommendation) REFERENCES names(nconst_short) \
-  //     );')
-
-  // This table should already exist from HW3
   var q1 = db.create_tables(
-    "CREATE TABLE IF NOT EXISTS friends ( \
-    followed VARCHAR(10), \
-    follower VARCHAR(10), \
-    FOREIGN KEY (follower) REFERENCES names(nconst), \
-    FOREIGN KEY (followed) REFERENCES names(nconst) \
-);"
-  );
-
-  // TODO: create users table
-  var q2 = db.create_tables(
     "CREATE TABLE IF NOT EXISTS users ( \
-      user_id INT AUTO_INCREMENT PRIMARY KEY, \
-      username VARCHAR(10), \
-      hashed_password VARCHAR(10), \
+      user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
+      username VARCHAR(255), \
+      hashed_password VARCHAR(255), \
+      first_name VARCHAR(255), \
+      last_name VARCHAR(255), \
+      affiliation VARCHAR(255,) \
       linked_nconst VARCHAR(10), \
+      birthday DATE, \
+      selfie VARCHAR(255) \
       FOREIGN KEY (linked_nconst) REFERENCES names(nconst) \
       );"
   );
 
-  // TODO: create posts table
-  var q3 = db.create_tables(
+  var q2 = db.create_tables(
     "CREATE TABLE IF NOT EXISTS posts ( \
-      post_id INT AUTO_INCREMENT PRIMARY KEY, \
+      post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
       parent_post INT, \
       title VARCHAR(255), \
       content VARCHAR(255), \
       author_id INT, \
+      depth INT, \
+      image VARCHAR(255), \
+      FOREIGN KEY (parent_post) REFERENCES posts(post_id), \
       FOREIGN KEY (author_id) REFERENCES users(user_id) \
       );"
   );
 
-  return await Promise.all([q1, q2, q3]);
+  var q3 = db.create_tables("CREATE TABLE IF NOT EXISTS likes ( \
+    post_id INT, \
+    user_id INT, \
+    FOREIGN KEY (post_id) REFERENCES posts(post_id), \
+    FOREIGN KEY (user_id) REFERENCES users(user_id) \
+    );"
+  );
+
+  var q4 = db.create_tables('CREATE TABLE IF NOT EXISTS user_hashtags ( \
+      user_id INT, \
+      hashtag VARCHAR(255), \
+      FOREIGN KEY (user_id) REFERENCES users(user_id) \
+      );');
+
+  var q5 = db.create_tables('CREATE TABLE IF NOT EXISTS post_hashtags ( \
+    post_id INT, \
+    hashtag VARCHAR(255), \
+    FOREIGN KEY (post_id) REFERENCES users(post_id) \
+    );');
+
+  var q6 = db.create_tables(
+    "CREATE TABLE IF NOT EXISTS friends ( \
+    followed INT, \
+    follower INT, \
+    FOREIGN KEY (follower) REFERENCES users(user_id), \
+    FOREIGN KEY (followed) REFERENCES users(user_id) \
+);"
+  );
+
+  var q7 = db.create_tables(
+    "CREATE TABLE IF NOT EXISTS groups ( \
+      group_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
+      group_name VARCHAR(255) \
+      );"
+  )
+
+  var q8 = db.create_tables(
+    "CREATE TABLE IF NOT EXISTS messages ( \
+    group_id INT, \
+    sender_id INT, \
+    timestamp DATE, \
+    message VARCHAR(255), \
+    FOREIGN KEY (group_id) REFERENCES groups(group_id), \
+    FOREIGN KEY (sender) REFERENCES users(user_id) \
+    );"
+  );
+
+  var q9 = db.create_tables(
+    "CREATE TABLE IF NOT EXISTS group_members ( \
+    group_id INT, \
+    user_id INT, \
+    FOREIGN KEY (group_id) REFERENCES groups(group_id), \
+    FOREIGN KEY (user_id) REFERENCES users(user_id) \
+    );"
+  );
+
+  var q10 = db.create_tables(
+    'CREATE TABLE IF NOT EXISTS recommendations ( \
+    user_id INT, \
+    recommendation INT, \
+    strength INT, \
+    FOREIGN KEY (user_id) REFERENCES users(user_id), \
+    FOREIGN KEY (recommendation) REFERENCES users(user_id) \
+  );')
+
+  var q11 = db.create_tables(
+    "CREATE TABLES IF NOT EXISTS invites ( \
+    invite_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
+    group_id INT, \
+    user_id INT, \
+    FOREIGN KEY (user_id) REFERENCES users(user_id) \
+    "
+  );
+
+  return await Promise.all([q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11]);
 }
 
 // Database connection setup
