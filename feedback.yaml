@@ -1,0 +1,29 @@
+## HW4 Reflection
+
+full_name: "Shruti Agarwal"  # Please fill in your full name
+penn_email: "agshruti@seas.upenn.edu"  # Please fill in your Penn email
+
+# List the features you implemented or write "Entire assignment"
+features_implemented: "Entire assignment"
+
+# List any extra-credit tasks completed
+ec_implemented: ""
+
+# Time Investment
+time_investment:
+  HW4-RC: 25  # Hours spent on HW4 regular credit
+  HW4-EC: 0  # Hours spent on HW4 extra credit
+
+# What you liked
+feedback_liked: Assignment felt relevant. 
+  
+
+# What you disliked and suggestions for improvement
+feedback_disliked: Very tedious at times. Instructions were a little fragmented, missing instructions on the question body parameter for the getMovies function. Lots of variables that weren't initialized anywhere but required to do the assignment (i.e. feed, chat, in Friends.tsx). Didn't register a route for logging out in the stub files.
+  
+
+# Academic Integrity
+copied_code: false  # Set to true if you copied any code from the Internet or classmates
+copied_code_details: ""  # If copied_code is true, specify the source
+collaborated_with_others: false  # Set to true if you collaborated with anyone on this assignment
+collaborated_with_others_details: ""  # If collaborated_with_others is true, specify with whom

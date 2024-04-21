@@ -1,0 +1,39 @@
+[33mWARNING[0m:  [08-04-2024 17:46:07] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [08-04-2024 17:46:07] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component System
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component SqliteDB
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component Posthog
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [08-04-2024 17:46:07] Starting component SegmentAPI
+[32mINFO[0m:     [08-04-2024 17:46:08] Started server process [[36m15372[0m]
+[32mINFO[0m:     [08-04-2024 17:46:08] Waiting for application startup.
+[32mINFO[0m:     [08-04-2024 17:46:08] Application startup complete.
+[32mINFO[0m:     [08-04-2024 17:46:08] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[33mWARNING[0m:  [14-04-2024 17:01:38] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [14-04-2024 17:01:38] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component System
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component SqliteDB
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component Posthog
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [14-04-2024 17:01:38] Starting component SegmentAPI
+[32mINFO[0m:     [14-04-2024 17:01:39] Started server process [[36m6639[0m]
+[32mINFO[0m:     [14-04-2024 17:01:39] Waiting for application startup.
+[32mINFO[0m:     [14-04-2024 17:01:39] Application startup complete.
+[32mINFO[0m:     [14-04-2024 17:01:39] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [14-04-2024 18:17:11] 127.0.0.1:38152 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:19:15] 127.0.0.1:51838 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:20:49] 127.0.0.1:42136 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [14-04-2024 18:20:51] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [14-04-2024 18:20:53] 127.0.0.1:42136 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:24:56] 127.0.0.1:52450 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:29:40] 127.0.0.1:45726 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:29:42] 127.0.0.1:45726 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:30:16] 127.0.0.1:35478 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:30:32] 127.0.0.1:41532 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:44:57] 127.0.0.1:35048 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:46:19] 127.0.0.1:42700 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [14-04-2024 18:46:29] 127.0.0.1:55702 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
