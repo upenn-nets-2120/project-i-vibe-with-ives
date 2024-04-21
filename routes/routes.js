@@ -53,9 +53,11 @@ var postRegister = async function (req, res) {
   // get username, password, and linked_id from body paramters
   const username = req.body.username;
   const password = req.body.password;
-  const linked_nconst = req.body.linked_id;
+  const linked_nconst = req.body.linked_nconst;
 
-  console.log(req);
+  console.log(username);
+  console.log(password);
+  console.log(linked_nconst);
 
   // throw 400 error if any of username, password, lnked_id is empty
   if (!username || !password || !linked_nconst) {
@@ -108,36 +110,20 @@ var postRegister = async function (req, res) {
   }
 };
 
-// define a function for encrypting passwords
-// Function for encrypting passwords WITH SALT
-// Look at the bcrypt hashing routines
-var callback = function (err, result) {
-  if (err) {
-    res.status(500).json({ error: "Error checking passwords." });
-    return;
-  } else if (result) {
-    res.status(200).json({ username: username });
-    req.session.user_id = result[0].user_id;
-    return;
-  } else {
-    res.status(401).json({ error: "Username and/or password are invalid." });
-    return;
-  }
-};
-
 // POST /login
 var postLogin = async function (req, res) {
   // TODO: check username and password and login
   const username = req.body.username;
   const password = req.body.password;
 
-  // if (!username || !password) {
-  //   res.status(400).json({
-  //     error:
-  //       "One or more of the fields you entered was empty, please try again.",
-  //   });
-  //   return;
-  // }
+  if (!username || !password) {
+    res.status(400).json({
+      error:
+        "One or more of the fields you entered was empty, please try again.",
+    });
+    return;
+  }
+
   const search = `SELECT * FROM users WHERE username = "${username}";`;
   console.log(search);
 
@@ -153,14 +139,17 @@ var postLogin = async function (req, res) {
       console.log(hash);
       console.log(match);
       if (!match) {
-        res.status(401).json({
-          error: "Username and/or password are invalid.",
-        });
-        return;
+
+        req.session.user_id = result[0].user_id;
+        req.session.username = result[0].username;
+        return res.status(200).json({ username: username });
+
       }
-      req.session.user_id = result[0].user_id;
-      req.session.username = result[0].username;
-      return res.status(200).json({ username: username });
+      res.status(401).json({
+        error: "Username and/or password are invalid.",
+      });
+      return;
+
     }
   } catch (err) {
     res.status(500).json({ error: "Error querying database." });
@@ -187,12 +176,12 @@ var getFriends = async function (req, res) {
 
   console.log(req.session);
   const username = req.params.username;
-  req.session.username = username;
+  // req.session.username = username;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const search = `SELECT names.nconst, names.primaryName FROM users JOIN friends ON users.linked_nconst = friends.follower JOIN names ON friends.followed = names.nconst WHERE users.username = '${username}';`;
 
@@ -206,6 +195,7 @@ var getFriends = async function (req, res) {
     };
     res.status(200).json(formattedData);
   } catch (err) {
+    console.log(err)
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -215,12 +205,12 @@ var getFriends = async function (req, res) {
 var getFriendRecs = async function (req, res) {
   // TODO: get all friend recommendations of current user
   const username = req.params.username;
-  req.session.username = username;
+  // req.session.username = username;
 
-  // if (!helper.isOK(username) || helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (!helper.isOK(username) || helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const search = `SELECT recommendations.recommendation, names.primaryName FROM users JOIN recommendations ON users.linked_nconst = recommendations.person JOIN names ON recommendations.recommendation = names.nconst WHERE users.username = '${username}';`;
 
@@ -247,16 +237,17 @@ var createPost = async function (req, res) {
   let parent_id = req.body.parent_id;
 
   const username = req.params.username;
-  req.session.username = username;
+  // req.session.username = username;
+  // req.session.user_id = 8;
 
   if (!parent_id) {
-    parent_id = "null";
+    parent_id = 0;
   }
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   if (!title || !content || !helper.isOK(title) || !helper.isOK(content)) {
     res.status(400).json({
@@ -294,23 +285,26 @@ var getFeed = async function (req, res) {
   const username = req.params.username;
   req.session.username = username;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   // get user_id of user with username username
   const initSearch = `SELECT user_id FROM users WHERE username = '${username}';`;
   try {
     const result = await db.send_sql(initSearch);
     if (result.length == 0) {
+      console.log("first");
       res.status(500).json({ error: "Error querying database." });
       return;
     } else {
       req.session.user_id = result[0].user_id;
-      req.session.linked_id = answer[0].linked_nconst;
+      req.session.linked_id = result[0].linked_nconst;
     }
   } catch (err) {
+    console.log("second");
+    console.log(err)
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -331,6 +325,7 @@ var getFeed = async function (req, res) {
     };
     res.status(200).json(formattedData);
   } catch (err) {
+    console.log("third");
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -343,10 +338,10 @@ var getMovie = async function (req, res) {
   const username = req.params.username;
   req.session.username = username;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const prompt = PromptTemplate.fromTemplate(`${req.body.question}`);
   const llm = new ChatOpenAI({

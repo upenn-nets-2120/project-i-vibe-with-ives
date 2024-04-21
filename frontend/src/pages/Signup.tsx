@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import config from "../../config.json";
 
+axios.defaults.withCredentials = true;
+
 export default function Signup() {
   const navigate = useNavigate();
 
@@ -22,20 +24,22 @@ export default function Signup() {
       return;
     }
     try {
-      console.log(JSON.stringify({  username,password, linked_nconst}))
+
+      // console.log(JSON.stringify({  username,password, linked_nconst}))
 
       //axios post with body parameters
       const response = await axios.post(`${rootURL}/register`, {
         username, password, linked_nconst
-      });
-      if (response.status === 200) {
-        alert("Successfully registered!");
-        navigate(`${username}/home`);
-      }
+      });      
+      
     } catch (error) {
-      // console.log(error)
-      alert("Registration failed.");
+      console.log(error)
+      alert(error);
     }
+
+    alert("Successfully registered!");
+    navigate("/" + username + "/home");
+
   };
 
   return (
@@ -95,7 +99,8 @@ export default function Signup() {
           </div>
           <div className="w-full flex justify-center">
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="px-4 py-2 rounded-md bg-indigo-500 outline-none font-bold text-white"
             >
               Sign up

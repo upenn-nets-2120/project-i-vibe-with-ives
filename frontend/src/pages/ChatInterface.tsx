@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import config from "../../config.json";
 
+axios.defaults.withCredentials = true;
+
 
 const MessageComponent = ({
   sender,
@@ -47,12 +49,12 @@ export default function ChatInterface() {
 
   const sendMessage = async () => {
 
+    setMessages([...messages, { sender: "user", message: input }]);
+
     // TODO: make a call to the getMovies route
     const response = await axios.post(`${rootURL}/${username}/movies`, {
       question: input,
     });
-
-    console.log(response)
 
     // TODO: add the chatbot's response to the messages state
     setMessages([...messages, { sender: "user", message: input }, { sender: "chatbot", message: response.data.message }]);
