@@ -4,6 +4,8 @@ import axios from "axios";
 import config from "../../config.json";
 import { useNavigate } from "react-router-dom";
 
+axios.defaults.withCredentials = true;
+
 const FriendComponent = ({
   name,
   add = true,
@@ -49,7 +51,7 @@ export default function Friends() {
   }, []);
 
   const feed = () => {
-    navigate(`${username}/home`);
+    navigate("/" + username + "/home");
   };
 
   const chat = () => {

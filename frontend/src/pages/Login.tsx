@@ -3,6 +3,8 @@ import axios from "axios"; // Import Axios
 import config from "../../config.json";
 import { useNavigate } from "react-router-dom";
 
+axios.defaults.withCredentials = true;
+
 export default function Login() {
   const navigate = useNavigate();
 

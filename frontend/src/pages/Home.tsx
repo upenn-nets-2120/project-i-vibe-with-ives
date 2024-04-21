@@ -6,6 +6,8 @@ import PostComponent from "../components/PostComponent";
 import CreatePostComponent from "../components/CreatePostComponent";
 import { useNavigate } from "react-router-dom";
 
+axios.defaults.withCredentials = true;
+
 export default function Home() {
   const { username } = useParams();
   const rootURL = config.serverRootURL;
