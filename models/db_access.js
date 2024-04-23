@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const config = require('../config.json'); // Load configuration
 const process = require('process');
 
@@ -48,10 +48,10 @@ async function get_db_connection() {
     dbconfig.password = process.env.RDS_PWD;
     the_db = mysql.createConnection(dbconfig);
 
-   // Connect to MySQL
-    return new Promise(function(resolve, reject) {
+    // Connect to MySQL
+    return new Promise(function (resolve, reject) {
         the_db.connect(err => {
-            if (err) 
+            if (err)
                 return reject(err);
             else {
                 console.log('Connected to the MySQL server.');
@@ -70,24 +70,24 @@ async function get_db_connection() {
  */
 async function send_sql(sql, params = []) {
     const dbo = await get_db_connection();
-    return new Promise((resolve, reject)=> {
-            dbo.query(sql,  (error, results)=>{
-            if(error){
+    return new Promise((resolve, reject) => {
+        dbo.query(sql, (error, results) => {
+            if (error) {
                 return reject(error);
             }
             return resolve(results);
         });
-    });    
-  }
+    });
+}
 
 
-  /**
- * Sends an SQL CREATE TABLES to the database
- * 
- * @param {*} query 
- * @param {*} params 
- * @returns promise
- */
+/**
+* Sends an SQL CREATE TABLES to the database
+* 
+* @param {*} query 
+* @param {*} params 
+* @returns promise
+*/
 async function create_tables(query, params = []) {
     return send_sql(query, params);
 }

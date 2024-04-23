@@ -1,8 +1,8 @@
 {
-    "database": {
-      "host": "localhost",
-      "port": "3306",
-      "database": "imdbdatabase"
-    },
-    "serverPort": "8080"
-  }
+  "database": {
+    "host": "localhost",
+    "port": "3306",
+    "database": "pennstagram"
+  },
+  "serverPort": "8080"
+}
