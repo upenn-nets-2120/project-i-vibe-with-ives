@@ -69,3 +69,23 @@
 [32mINFO[0m:     [21-04-2024 13:46:15] 127.0.0.1:57864 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
 [32mINFO[0m:     [21-04-2024 13:54:57] 127.0.0.1:54258 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [21-04-2024 13:54:58] 127.0.0.1:54258 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [21-04-2024 13:58:25] 127.0.0.1:47816 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [21-04-2024 13:58:26] 127.0.0.1:47816 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[33mWARNING[0m:  [21-04-2024 21:11:36] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [21-04-2024 21:11:37] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [21-04-2024 21:11:37] Starting component System
+[36mDEBUG[0m:    [21-04-2024 21:11:37] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [21-04-2024 21:11:37] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [21-04-2024 21:11:37] Starting component SqliteDB
+[36mDEBUG[0m:    [21-04-2024 21:11:38] Starting component Posthog
+[36mDEBUG[0m:    [21-04-2024 21:11:38] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [21-04-2024 21:11:38] Starting component SegmentAPI
+[32mINFO[0m:     [21-04-2024 21:11:39] Started server process [[36m31460[0m]
+[32mINFO[0m:     [21-04-2024 21:11:39] Waiting for application startup.
+[32mINFO[0m:     [21-04-2024 21:11:39] Application startup complete.
+[32mINFO[0m:     [21-04-2024 21:11:39] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [21-04-2024 21:11:51] 127.0.0.1:55816 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [21-04-2024 21:11:53] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [21-04-2024 21:11:53] 127.0.0.1:55816 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [21-04-2024 21:17:13] 127.0.0.1:39656 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[32mINFO[0m:     [21-04-2024 21:17:19] 127.0.0.1:49612 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
