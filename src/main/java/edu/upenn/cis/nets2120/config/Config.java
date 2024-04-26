@@ -14,7 +14,7 @@ public class Config {
 
     public static final String DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/pennstagram";
     public static final String DATABASE_USERNAME = "admin";
-    public static final String DATABASE_PASSWORD = "rds-password";
+    public static final String DATABASE_PASSWORD = "password1";
 
     public static final String SPARK_APP_NAME = "IMDBRelations";
     public static final String SPARK_MASTER_URL = "local[*]";

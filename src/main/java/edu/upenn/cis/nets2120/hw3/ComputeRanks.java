@@ -19,6 +19,35 @@ import scala.Tuple2;
 import java.util.*;
 import java.lang.Math;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SparkSession;
+
+import edu.upenn.cis.nets2120.config.Config;
+import edu.upenn.cis.nets2120.engine.SparkConnector;
+import scala.Tuple2;
+
+import java.sql.Connection;
+import java.sql.Statement;
+import java.sql.ResultSet;
+import java.sql.PreparedStatement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.spark.api.java.JavaRDD;
+
 public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     /**
      * The basic logger
@@ -38,6 +67,20 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     }
 
     /**
+     * Initialize the database connection. Do not modify this method.
+     *
+     * @throws InterruptedException User presses Ctrl-C
+     */
+    public void initialize() throws InterruptedException {
+        logger.info("Connecting to Spark...");
+
+        spark = SparkConnector.getSparkConnection();
+        context = SparkConnector.getSparkContext();
+
+        logger.debug("Connected!");
+    }
+
+    /**
      * Fetch the social network from friends table, and create a (user1_id, user2_id)
      * edge graph
      *
@@ -45,17 +88,6 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
      * @return JavaPairRDD: (followed: String, follower: String)
      */
     protected JavaPairRDD<String, String> getSocialNetwork(String filePath) {
-        // JavaRDD<String> file = context.textFile(filePath, Config.PARTITIONS);
-
-        // // TODO Load the file filePath into an RDD (take care to handle both spaces and
-        // // tab characters as separators) 
-        
-        // JavaPairRDD<String, String> socialNetwork = file.flatMapToPair(line -> {
-        //     String[] parts = line.split("\\s+");
-        //     return Arrays.asList(new Tuple2<>(parts[1], parts[0])).iterator();
-        // });
-
-        // return socialNetwork;
         try {
             logger.info("Connecting to database...");
             Connection connection = null;
@@ -76,9 +108,6 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
             logger.info("Successfully connected to database!");
 
-            // TODO: After connecting successfully, use SQL queries to get the first 10000
-            //  rows of the friends table you created when sorting the `followed` column in
-            //  ASC order. Then parallelize the data you get and return a JavaPairRDD object.
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT DISTINCT user1_id, user2_id FROM friends ORDER BY user1_id ASC;");
             List<Tuple2<String, String>> data = new ArrayList<>();
@@ -193,15 +222,17 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         }
 
         //Output the top 1000 node IDs with the highest SocialRank values, as well as the SocialRank value of each. The output should consist of 1000 lines of the form x y, where x is a node ID and y is the socialRank of x; the lines should be ordered by SocialRank in descending order.
-        List<Tuple2<String, Double>> finalIdRanks = ranks.mapToPair(Tuple2::swap).sortByKey(false).mapToPair(Tuple2::swap);
+        List<Tuple2<String, Double>> finalIdRanks = ranks.mapToPair(Tuple2::swap).sortByKey(false).mapToPair(Tuple2::swap).take(ranks.collect().size());
+
+        sendResultsToDatabase(finalIdRanks);
 
         return finalIdRanks;
 
     }
 
-    public void sendResultsToDatabase(List<Tuple2<Tuple2<String, String>, Integer>> recommendations) {
+    public void sendResultsToDatabase(List<Tuple2<String, Double>> recommendations) {
 
-        String insertQuery = "INSERT INTO recommendations (user1_id, recommendation, strength) VALUES (?, ?, ?)";
+        String insertQuery = "INSERT INTO social_rank (user_id, social_rank) VALUES (?, ?)";
 
         try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME,
                 Config.DATABASE_PASSWORD)) {
@@ -209,21 +240,19 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
             // create recommendations_2 table if it doesn't exist
             try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE recommendations (user1_id VARCHAR(10), recommendation VARCHAR(10), strength INT, PRIMARY KEY(person, recommendation), FOREIGN KEY (person) REFERENCES names(nconst), FOREIGN KEY (recommendation) REFERENCES names(nconst));");
+                statement.executeUpdate("CREATE TABLE social_rank (user_id INT, social_rank FLOAT, FOREIGN KEY (user_id) REFERENCES users(user_id));");
             }
 
             // TODO: Write your recommendations data back to imdbdatabase.
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
             // Iterate over recommendations and insert each one into the database
-                for (Tuple2<Tuple2<String, String>, Integer> recommendation : recommendations) {
-                    String followed = recommendation._1()._1();
-                    String follower = recommendation._1()._2();
-                    int strength = recommendation._2();
+                for (Tuple2<String, Double> recommendation : recommendations) {
+                    String user = recommendation._1();
+                    double rank = recommendation._2();
 
                     // Set parameters for the prepared statement
-                    preparedStatement.setString(1, followed);
-                    preparedStatement.setString(2, follower);
-                    preparedStatement.setInt(3, strength);
+                    preparedStatement.setString(1, user);
+                    preparedStatement.setDouble(2, rank);
 
                     // Execute the INSERT statement
                     preparedStatement.executeUpdate();
@@ -235,18 +264,31 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         }
     }
 
-    // public void writeResultsCsv(List<Tuple2<String, Double>> socialRanks) {
-    //     // Create a new file to write the recommendations to
-    //     File file = new File("socialrank-local.csv");
-    //     try (PrintWriter writer = new PrintWriter(file)) {
-    //         // Write the recommendations to the file
-    //         for (Tuple2<String, Double> rank : socialRanks) {
-    //             writer.println(rank._1 + " " + rank._2);
-    //         }
-    //     } catch (Exception e) {
-    //         logger.error("Error writing ranks to file: " + e.getMessage(), e);
-    //     }
-    // }
+
+    /**
+     * Graceful shutdown
+     */
+    public void shutdown() {
+        logger.info("Shutting down");
+
+        if (spark != null) {
+            spark.close();
+        }
+    }
+
+    public static void main(String[] args) {
+        final ComputeRanks cr = new ComputeRanks(0.01, 10, 1000, true);
+        try {
+            cr.initialize();
+            cr.run(true);
+        } catch (final IOException ie) {
+            logger.error("IO error occurred: " + ie.getMessage(), ie);
+        } catch (final InterruptedException e) {
+            logger.error("Interrupted: " + e.getMessage(), e);
+        } finally {
+            cr.shutdown();
+        }
+    }
 
 
 }

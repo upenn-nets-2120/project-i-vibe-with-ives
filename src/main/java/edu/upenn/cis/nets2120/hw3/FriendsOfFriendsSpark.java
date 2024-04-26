@@ -15,7 +15,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
 import edu.upenn.cis.nets2120.config.Config;
-import edu.upenn.cis.nets2120.storage.SparkConnector;
+import edu.upenn.cis.nets2120.engine.SparkConnector;
 import scala.Tuple2;
 
 import java.sql.Connection;
@@ -87,10 +87,11 @@ public class FriendsOfFriendsSpark {
             //  ASC order. Then parallelize the data you get and return a JavaPairRDD object.
 
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT DISTINCT followed, follower FROM friends ORDER BY followed ASC LIMIT 10000;");
+            ResultSet resultSet = statement.executeQuery("SELECT DISTINCT user1_id, user2_id FROM friends ORDER BY user1_id ASC;");
             List<Tuple2<String, String>> data = new ArrayList<>();
             while (resultSet.next()) {
-                data.add(new Tuple2<>(resultSet.getString("followed"), resultSet.getString("follower")));
+                data.add(new Tuple2<>(resultSet.getString("user1_id"), resultSet.getString("user2_id")));
+                data.add(new Tuple2<>(resultSet.getString("user2_id"), resultSet.getString("user1_id")));
             }
             JavaPairRDD<String, String> network = context.parallelizePairs(data);
             return network;
@@ -138,15 +139,14 @@ public class FriendsOfFriendsSpark {
      */
     public void sendResultsToDatabase(List<Tuple2<Tuple2<String, String>, Integer>> recommendations) {
 
-        String insertQuery = "INSERT INTO recommendations (user1_id, recommendation, strength) VALUES (?, ?, ?)";
+        String insertQuery = "INSERT INTO recommendations (user_id, recommendation, strength) VALUES (?, ?, ?)";
 
         try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME,
                 Config.DATABASE_PASSWORD)) {
 
-
             // create recommendations_2 table if it doesn't exist
             try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE recommendations (user1_id VARCHAR(10), recommendation VARCHAR(10), strength INT, PRIMARY KEY(person, recommendation), FOREIGN KEY (person) REFERENCES names(nconst), FOREIGN KEY (recommendation) REFERENCES names(nconst));");
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS recommendations (user_id VARCHAR(255), recommendation VARCHAR(255), strength INT, PRIMARY KEY(user_id, recommendation), FOREIGN KEY (user_id) REFERENCES users(user_id), FOREIGN KEY (recommendation) REFERENCES users(user_id));");
             }
 
             // TODO: Write your recommendations data back to imdbdatabase.
@@ -214,7 +214,7 @@ public class FriendsOfFriendsSpark {
             return;
         }
         List<Tuple2<Tuple2<String, String>, Integer>> collectedRecommendations = recommendations.collect();
-        writeResultsCsv(collectedRecommendations);
+        // writeResultsCsv(collectedRecommendations);
         sendResultsToDatabase(collectedRecommendations);
 
         logger.info("*** Finished friend of friend recommendations! ***");

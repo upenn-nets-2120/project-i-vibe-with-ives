@@ -379,6 +379,7 @@ var routes = {
   get_movie: getMovie,
   create_post: createPost,
   get_feed: getFeed,
+
 };
 
 module.exports = routes;

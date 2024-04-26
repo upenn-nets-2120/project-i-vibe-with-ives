@@ -1,20 +1,34 @@
+const helper = require("../routes/route_helper.js");
+const db = require("../models/db_access.js");
+
+
 // /:username/recommendations
 var getRecommendations = async function (req, res) {
   // TODO: check username and password and login
   const username = req.params.username;
+  req.session.username = username;
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const answer = await db.send_sql(search);
+  if (answer.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  } else {
+    req.session.user_id = answer[0].user_id;
+  }
 
   // check if user is logged in
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   // social ranks per user (user1_id, socialrank)
   // mutual friends per user (i.e. recommendations) (user1_id, recommendation)
   // join socialrank and recommendations table on user1_id, sort by social rank, get highest 10 per usualy
-  const query = `SELECT users.user_id, users.username FROM recommendations r JOIN socialranks s ON r.recommendation = s.user1_id JOIN users ON r.user1_id = users.user_id WHERE r.user1_id = ${req.session.user_id} ORDER BY s.socialrank DESC LIMIT 10;`;
+  const query = `SELECT users.user_id, users.username FROM recommendations r JOIN social_rank s ON r.recommendation = s.user_id JOIN users ON r.recommendation = users.user_id WHERE r.user_id = ${req.session.user_id} ORDER BY s.social_rank DESC LIMIT 10;`;
   try {
-    const result = await db.send_sql(searchQuery);
+    const result = await db.send_sql(query);
     const formattedData = {
       results: result.map((item) => ({
         recommendation: item.user_id,
@@ -28,6 +42,13 @@ var getRecommendations = async function (req, res) {
     return;
   }
 };
+
+var routes = {
+  get_recs: getRecommendations,
+
+};
+
+module.exports = routes;
 
 // var createFollowedMap = async function () {
 //   let friendMap = {};
