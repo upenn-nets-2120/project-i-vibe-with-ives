@@ -59,8 +59,6 @@ var postRegister = async function (req, res) {
   console.log(password);
   console.log(linked_nconst);
 
-
-
   // throw 400 error if any of username, password, lnked_id is empty
   if (!username || !password || !linked_nconst) {
     res.status(400).json({
@@ -115,7 +113,7 @@ var postRegister = async function (req, res) {
 // POST /login
 var postLogin = async function (req, res) {
   // TODO: check username and password and login
-  const username = req.body.username
+  const username = req.body.username;
   const password = req.body.password;
 
   if (!username || !password) {
@@ -142,17 +140,14 @@ var postLogin = async function (req, res) {
       console.log(hash);
       console.log(match);
       if (match) {
-
         req.session.user_id = result[0].user_id;
         req.session.username = result[0].username;
         return res.status(200).json({ username: username });
-
       }
       res.status(401).json({
         error: "Username and/or password are invalid.",
       });
       return;
-
     }
   } catch (err) {
     res.status(500).json({ error: "Error querying database." });
@@ -196,7 +191,7 @@ var getFriends = async function (req, res) {
   FROM users u1
   JOIN friends f ON u1.user_id = f.user2_id
   JOIN users u3 ON f.user1_id = u3.user_id
-  WHERE u1.username = "${username}";`
+  WHERE u1.username = "${username}";`;
 
   const results = await db.send_sql(search);
 
@@ -249,7 +244,7 @@ var post_request_friend = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_accept_friend = async function (req, res) {
   const username = req.body.username;
@@ -297,7 +292,7 @@ var post_accept_friend = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_remove_friend = async function (req, res) {
   const username = req.body.username;
@@ -328,7 +323,7 @@ var post_remove_friend = async function (req, res) {
   }
 
   const friend_id = result2[0].user_id;
-  const delete_query = `DELETE FROM friends WHERE (user1_id, user2_id) IN ((${user_id}, ${friend_id}), (${friend_id}, ${user_id}));`
+  const delete_query = `DELETE FROM friends WHERE (user1_id, user2_id) IN ((${user_id}, ${friend_id}), (${friend_id}, ${user_id}));`;
 
   const result3 = await db.insert_items(delete_query);
 
@@ -338,7 +333,7 @@ var post_remove_friend = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 // GET /recommendations
 var getFriendRecs = async function (req, res) {
@@ -443,7 +438,7 @@ var getFeed = async function (req, res) {
     }
   } catch (err) {
     console.log("second");
-    console.log(err)
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -481,26 +476,25 @@ var create_chat = async function (req, res) {
     return;
   }
   try {
-  const insert = `INSERT INTO \`groups\` (group_name) VALUES ('${name}');`;
-  const result2 = await db.insert_items(insert);
+    const insert = `INSERT INTO \`groups\` (group_name) VALUES ('${name}');`;
+    const result2 = await db.insert_items(insert);
 
+    const group_id_result = await db.send_sql(search);
+    const group_id = group_id_result[0].group_id;
 
-  const group_id_result = await db.send_sql(search);
-  const group_id = group_id_result[0].group_id;
+    const user_ids_query = `SELECT user_id FROM users WHERE username IN (${people
+      .map((person) => `'${person}'`)
+      .join(", ")});`;
+    const user_ids_result = await db.send_sql(user_ids_query);
 
-  const user_ids_query = `SELECT user_id FROM users WHERE username IN (${people.map((person) => `'${person}'`).join(", ")});`;
-  const user_ids_result = await db.send_sql(user_ids_query);
+    const user_ids = user_ids_result.map((user) => user.user_id);
 
-  const user_ids = user_ids_result.map((user) => user.user_id);
-
-
-  if (result2 > 0) {
-    user_ids.forEach(async (user_id) => {
-      const insert2 = `INSERT INTO group_members (group_id, user_id) VALUES ('${group_id}', '${user_id}');`;
-      await db.insert_items(insert2);
-
-    });
-  } 
+    if (result2 > 0) {
+      user_ids.forEach(async (user_id) => {
+        const insert2 = `INSERT INTO group_members (group_id, user_id) VALUES ('${group_id}', '${user_id}');`;
+        await db.insert_items(insert2);
+      });
+    }
   } catch (err) {
     res.status(500).json({ error: "Error querying database." });
     return;
@@ -531,7 +525,6 @@ var post_send_message = async function (req, res) {
   const result3 = await db.send_sql(search3);
   console.log(result3);
 
-
   if (result3.length == 0) {
     res.status(404).json({ error: "Chat not found." });
     return;
@@ -547,7 +540,6 @@ var post_send_message = async function (req, res) {
     return;
   }
 
-
   const insert = `INSERT INTO messages (message, sender_id, group_id, timestamp) VALUES ('${message}', '${user_id}', '${chat_id}', NOW());`;
   const result4 = await db.insert_items(insert);
   if (result4 > 0) {
@@ -557,11 +549,11 @@ var post_send_message = async function (req, res) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
-}
+};
 var get_chats = async function (req, res) {
   // TODO: get all chats of current user
   const username = req.body.username;
-  
+
   if (helper.isLoggedIn(req, username) == false) {
     res.status(403).json({ error: "Not logged in." });
     return;
@@ -577,13 +569,11 @@ var get_chats = async function (req, res) {
     };
 
     res.status(200).json(formattedData);
-  }
-  catch (err) {
+  } catch (err) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
-
-}
+};
 
 var get_messages = async function (req, res) {
   const username = req.body.username;
@@ -616,12 +606,11 @@ var get_messages = async function (req, res) {
       return a.timestamp - b.timestamp;
     });
     res.status(200).json(formattedData);
-  }
-  catch (err) {
+  } catch (err) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
-}
+};
 var post_leave_chat = async function (req, res) {
   const username = req.body.username;
   const chat_name = req.body.chat_name;
@@ -668,7 +657,7 @@ var post_leave_chat = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_invite_member = async function (req, res) {
   const username = req.body.username;
@@ -726,7 +715,7 @@ var post_invite_member = async function (req, res) {
     return;
   }
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_join_chat = async function (req, res) {
   const username = req.body.username;
@@ -780,7 +769,7 @@ var post_join_chat = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 // HERE
 var post_add_hashtag = async function (req, res) {
   const username = req.body.username;
@@ -811,7 +800,7 @@ var post_add_hashtag = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_remove_hashtag = async function (req, res) {
   const username = req.body.username;
@@ -842,10 +831,9 @@ var post_remove_hashtag = async function (req, res) {
   }
 
   return res.status(404).json({ error: "Hashtag not found." });
-}
+};
 
 var post_set_email = async function (req, res) {
-
   const username = req.body.username;
   const email = req.body.email;
 
@@ -865,7 +853,7 @@ var post_set_email = async function (req, res) {
   }
 
   return res.status(500).json({ error: "Error querying database." });
-}
+};
 
 var post_set_password = async function (req, res) {
   const username = req.params.username;
@@ -895,7 +883,7 @@ var post_set_password = async function (req, res) {
       }
     }
   });
-}
+};
 
 var get_profile = async function (req, res) {
   const username = req.body.username;
@@ -911,8 +899,8 @@ var get_profile = async function (req, res) {
 
   const user = result[0];
 
-  res.status(200).json({result: user});
-}
+  res.status(200).json({ result: user });
+};
 
 var getMovie = async function (req, res) {
   const vs = await getVectorStore();
@@ -949,10 +937,6 @@ var getMovie = async function (req, res) {
   res.status(200).json({ message: result });
 };
 
-
-
-
-
 /* Here we construct an object that contains a field for each route
    we've defined, so we can call the routes from app.js. */
 
@@ -980,8 +964,7 @@ var routes = {
   get_profile: get_profile,
   post_request_friend: post_request_friend,
   post_accept_friend: post_accept_friend,
-  post_remove_friend: post_remove_friend
-
+  post_remove_friend: post_remove_friend,
 };
 
 module.exports = routes;
