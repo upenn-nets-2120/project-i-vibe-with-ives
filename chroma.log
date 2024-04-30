@@ -69,3 +69,18 @@
 [32mINFO[0m:     [21-04-2024 13:46:15] 127.0.0.1:57864 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
 [32mINFO[0m:     [21-04-2024 13:54:57] 127.0.0.1:54258 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [21-04-2024 13:54:58] 127.0.0.1:54258 - "POST /api/v1/collections/d2c62cfd-faf8-42b2-9e2b-710658d4ecf2/query HTTP/1.1" 200
+[33mWARNING[0m:  [30-04-2024 20:28:47] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [30-04-2024 20:28:47] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component System
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component SqliteDB
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component Posthog
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [30-04-2024 20:28:47] Starting component SegmentAPI
+[32mINFO[0m:     [30-04-2024 20:28:47] Started server process [[36m822[0m]
+[32mINFO[0m:     [30-04-2024 20:28:47] Waiting for application startup.
+[32mINFO[0m:     [30-04-2024 20:28:47] Application startup complete.
+[31mERROR[0m:    [30-04-2024 20:28:47] [Errno -2] Name or service not known
+[32mINFO[0m:     [30-04-2024 20:28:47] Waiting for application shutdown.
+[32mINFO[0m:     [30-04-2024 20:28:47] Application shutdown complete.
