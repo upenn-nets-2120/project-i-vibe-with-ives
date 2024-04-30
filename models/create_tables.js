@@ -24,6 +24,7 @@ async function create_tables(db) {
       affiliation VARCHAR(255), \
       linked_nconst VARCHAR(10), \
       birthday DATE, \
+      email VARCHAR(255), \
       selfie VARCHAR(255), \
       FOREIGN KEY (linked_nconst) REFERENCES names(nconst) \
       );"

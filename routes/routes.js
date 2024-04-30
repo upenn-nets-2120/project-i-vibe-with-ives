@@ -26,6 +26,10 @@ const config = require("../config.json"); // Load configuration
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 
+// // Face Matching imports from app.js
+// const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
+// initializeFaceModels().catch(console.error);
+
 // Database connection setup
 const db = dbsingleton;
 
@@ -47,68 +51,97 @@ var getVectorStore = async function (req) {
   return vectorStore;
 };
 
-// POST /register
-var postRegister = async function (req, res) {
-  // TODO: register a user with given body parameters
-  // get username, password, and linked_id from body paramters
-  const username = req.body.username;
-  const password = req.body.password;
-  const linked_nconst = req.body.linked_nconst;
+// // POST /register
+// var postRegister = async function (req, res) {
+//   // register a user with given body parameters
+//   const username = req.body.username;
+//   const password = req.body.password;
+//   const firstName = req.body.firstName;
+//   const lastName = req.body.lastName;
+//   const affiliation = req.body.affiliation;
+//   const birthday = req.body.birthday;
+//   const selfie = req.body.selfie;
+//   const email = req.body.email;
+//   const linked_nconst = req.body.linked_nconst;
+//   const img = req.body.img;
+//   // add stuff to store image to s3 bucket and get link
 
-  console.log(username);
-  console.log(password);
-  console.log(linked_nconst);
 
-  // throw 400 error if any of username, password, lnked_id is empty
-  if (!username || !password || !linked_nconst) {
-    res.status(400).json({
-      error:
-        "One or more of the fields you entered was empty, please try again.",
-    });
-    return;
-  }
+//   // const linked_nconst = req.body.linked_nconst;
 
-  // if user with same username already exists in database, throw 409 error
-  const search = `SELECT * FROM users WHERE username = '${username}';`;
-  console.log(search);
-  try {
-    const result = await db.send_sql(search);
-    if (result.length > 0) {
-      res.status(409).json({
-        error:
-          "An account with this username already exists, please try again.",
-      });
-      return;
-    } else {
-      helper.encryptPassword(password, async function (err, hash) {
-        if (err) {
-          res.status(400).json({ message: "Error encrypting password" });
-          return;
-        } else {
-          // insert into users table
-          // if user with same username already exists in database, throw 409 error
-          const insert = `INSERT INTO users (username, hashed_password, linked_nconst) VALUES ('${username}', '${hash}', '${linked_nconst}');`;
-          // try catch and await call
+//   console.log(username);
+//   console.log(password);
+//   // console.log(linked_nconst);
 
-          const result = await db.insert_items(insert);
-          if (result > 0) {
-            res.status(200).json({ username: username });
-            return;
-          } else {
-            console.log("second");
-            console.log(err);
-            res.status(500).json({ error: "Error querying database." });
-            return;
-          }
-        }
-      });
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  }
-};
+//   // throw 400 error if any of username, password, email, lnked_nconst is empty
+//   if (!username || !password || !email || !linked_nconst) {
+//     res.status(400).json({
+//       error:
+//         "One or more of the fields you entered was empty, please try again.",
+//     });
+//     return;
+//   }
+
+//   // if user with same username already exists in database, throw 409 error
+//   const search = `SELECT * FROM users WHERE username = '${username}';`;
+//   console.log(search);
+//   try {
+//     const result = await db.send_sql(search);
+//     if (result.length > 0) {
+//       // if user with same username already exists in database, throw 409 error
+//       res.status(409).json({
+//         error:
+//           "An account with this username already exists, please try again.",
+//       });
+//       return;
+//     } else {
+//       helper.encryptPassword(password, async function (err, hash) {
+//         if (err) {
+//           res.status(400).json({ message: "Error encrypting password" });
+//           return;
+//         } else {
+//           // insert into users table
+//           const insert = `INSERT INTO users (username, hashed_password, first_name, last_name, affiliation, linked_nconst, birthday, email, selfie) VALUES ('${username}', '${hash}', '${firstName}', '${lastName}', '${affiliation}', '${linked_nconst}', '${birthday}', '${email}', '${selfie}');`;
+//           // try catch and await call
+//           const result = await db.insert_items(insert);
+//           if (result > 0) {
+//             res.status(200).json({ username: username });
+//             return;
+//           } else {
+//             console.log("second");
+//             console.log(err);
+//             res.status(500).json({ error: "Error querying database." });
+//             return;
+//           }
+//         }
+//       });
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ error: "Error querying database." });
+//     return;
+//   }
+// };
+
+// var getActors = async function (req, res) {
+//   const img = req.params.img;
+
+//   try {
+//     const collection = await client.getOrCreateCollection({
+//       name: "face-api",  // This should match with your collection name in app.js
+//       embeddingFunction: null,  // Make sure this is correctly configured as in app.js
+//       metadata: { "hnsw:space": "l2" }
+//     });
+
+//     const matches = await findTopKMatches(collection, img, 5);
+//     res.status(200).json(matches);
+//     return;
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Error processing image.');
+//     return;
+//   }
+// };
 
 // POST /login
 var postLogin = async function (req, res) {
@@ -372,7 +405,6 @@ var getMovie = async function (req, res) {
 var routes = {
   get_helloworld: getHelloWorld,
   post_login: postLogin,
-  post_register: postRegister,
   post_logout: postLogout,
   get_friends: getFriends,
   get_friend_recs: getFriendRecs,
