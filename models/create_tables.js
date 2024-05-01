@@ -31,12 +31,17 @@ async function create_tables(db) {
   );
 
   var q2 = db.create_tables(
+  var q2 = db.create_tables(
     "CREATE TABLE IF NOT EXISTS posts ( \
+      post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
       post_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, \
       parent_post INT, \
       title VARCHAR(255), \
       content VARCHAR(255), \
       author_id INT, \
+      depth INT, \
+      image VARCHAR(255), \
+      FOREIGN KEY (parent_post) REFERENCES posts(post_id), \
       depth INT, \
       image VARCHAR(255), \
       FOREIGN KEY (parent_post) REFERENCES posts(post_id), \

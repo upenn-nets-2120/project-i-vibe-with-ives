@@ -162,6 +162,7 @@ var postLogin = async function (req, res) {
 
   try {
     const result = await db.send_sql(search);
+    console.log(result);
     if (result.length == 0) {
       res.status(401).json({ error: "Username and/or password are invalid." });
       return;
@@ -171,18 +172,15 @@ var postLogin = async function (req, res) {
       console.log(password);
       console.log(hash);
       console.log(match);
-      if (!match) {
-
+      if (match) {
         req.session.user_id = result[0].user_id;
         req.session.username = result[0].username;
         return res.status(200).json({ username: username });
-
       }
       res.status(401).json({
         error: "Username and/or password are invalid.",
       });
       return;
-
     }
   } catch (err) {
     res.status(500).json({ error: "Error querying database." });
@@ -216,22 +214,158 @@ var getFriends = async function (req, res) {
     return;
   }
 
-  const search = `SELECT names.nconst, names.primaryName FROM users JOIN friends ON users.linked_nconst = friends.follower JOIN names ON friends.followed = names.nconst WHERE users.username = '${username}';`;
+  const search = `SELECT u2.username AS friend_username
+  FROM users u1
+  JOIN friends f ON u1.user_id = f.user1_id
+  JOIN users u2 ON f.user2_id = u2.user_id
+  WHERE u1.username = "${username}"
+  UNION
+  SELECT u3.username AS friend_username
+  FROM users u1
+  JOIN friends f ON u1.user_id = f.user2_id
+  JOIN users u3 ON f.user1_id = u3.user_id
+  WHERE u1.username = "${username}";`;
 
-  try {
-    const result = await db.send_sql(search);
-    const formattedData = {
-      results: result.map((item) => ({
-        followed: item.nconst,
-        primaryName: item.primaryName,
-      })),
-    };
-    res.status(200).json(formattedData);
-  } catch (err) {
-    console.log(err)
+  const results = await db.send_sql(search);
+
+  const formattedData = {
+    results: results.map((item) => ({
+      friend_username: item.friend_username,
+    })),
+  };
+
+  res.status(200).json(formattedData);
+};
+
+var post_request_friend = async function (req, res) {
+  const username = req.body.username;
+  const friend = req.body.friend;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT user_id FROM users WHERE username = '${friend}';`;
+
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+
+  const friend_id = result2[0].user_id;
+
+  const insert = `INSERT INTO friend_requests (requester, requestee) VALUES ('${user_id}', '${friend_id}');`;
+
+  const result3 = await db.insert_items(insert);
+
+  if (result3 > 0) {
+    res.status(201).json({ message: "Friend request sent." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_accept_friend = async function (req, res) {
+  const username = req.body.username;
+  const friend = req.body.friend;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT user_id FROM users WHERE username = '${friend}';`;
+
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+
+  const friend_id = result2[0].user_id;
+
+  const delete_query = `DELETE FROM friend_requests WHERE requester = '${friend_id}' AND requestee = '${user_id}';`;
+
+  const result3 = await db.insert_items(delete_query);
+
+  if (result3 > 0) {
+    const insert = `INSERT INTO friends (user1_id, user2_id) VALUES ('${user_id}', '${friend_id}');`;
+
+    const result4 = await db.insert_items(insert);
+
+    if (result4 > 0) {
+      res.status(201).json({ message: "Friend added." });
+      return;
+    }
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_remove_friend = async function (req, res) {
+  const username = req.body.username;
+  const friend = req.body.friend;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT user_id FROM users WHERE username = '${friend}';`;
+
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+
+  const friend_id = result2[0].user_id;
+  const delete_query = `DELETE FROM friends WHERE (user1_id, user2_id) IN ((${user_id}, ${friend_id}), (${friend_id}, ${user_id}));`;
+
+  const result3 = await db.insert_items(delete_query);
+
+  if (result3 > 0) {
+    res.status(201).json({ message: "Friend removed." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
 };
 
 // GET /recommendations
@@ -337,7 +471,7 @@ var getFeed = async function (req, res) {
     }
   } catch (err) {
     console.log("second");
-    console.log(err)
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -362,6 +496,443 @@ var getFeed = async function (req, res) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
+};
+
+var create_chat = async function (req, res) {
+  const people = req.body.people;
+  const name = req.body.name;
+
+  const search = `SELECT * FROM \`groups\` WHERE group_name = "${name}";`;
+  const result = await db.send_sql(search);
+  if (result.length > 0) {
+    res.status(409).json({ error: "Chat with this name already exists." });
+    return;
+  }
+  try {
+    const insert = `INSERT INTO \`groups\` (group_name) VALUES ('${name}');`;
+    const result2 = await db.insert_items(insert);
+
+    const group_id_result = await db.send_sql(search);
+    const group_id = group_id_result[0].group_id;
+
+    const user_ids_query = `SELECT user_id FROM users WHERE username IN (${people
+      .map((person) => `'${person}'`)
+      .join(", ")});`;
+    const user_ids_result = await db.send_sql(user_ids_query);
+
+    const user_ids = user_ids_result.map((user) => user.user_id);
+
+    if (result2 > 0) {
+      user_ids.forEach(async (user_id) => {
+        const insert2 = `INSERT INTO group_members (group_id, user_id) VALUES ('${group_id}', '${user_id}');`;
+        await db.insert_items(insert2);
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+  res.status(201).json({ message: "Chat created." });
+};
+
+var post_send_message = async function (req, res) {
+  const username = req.params.username;
+  const message = req.body.message;
+  const chat_name = req.body.chat_name;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+  const user_id = result[0].user_id;
+  console.log("USERID");
+  console.log(user_id);
+  const search3 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
+  const result3 = await db.send_sql(search3);
+  console.log(result3);
+
+  if (result3.length == 0) {
+    res.status(404).json({ error: "Chat not found." });
+    return;
+  }
+  const chat_id = result3[0].group_id;
+  console.log("CHATID");
+  console.log(chat_id);
+  // check if user is in chat
+  const search2 = `SELECT * FROM group_members WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
+  const result2 = await db.send_sql(search2);
+  if (result2.length == 0) {
+    res.status(403).json({ error: "User is not in chat." });
+    return;
+  }
+
+  const insert = `INSERT INTO messages (message, sender_id, group_id, timestamp) VALUES ('${message}', '${user_id}', '${chat_id}', NOW());`;
+  const result4 = await db.insert_items(insert);
+  if (result4 > 0) {
+    res.status(201).json({ message: "Message sent." });
+    return;
+  } else {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+};
+var get_chats = async function (req, res) {
+  // TODO: get all chats of current user
+  const username = req.body.username;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT group_name FROM group_members JOIN \`groups\` ON group_members.group_id = \`groups\`.group_id JOIN users ON group_members.user_id = users.user_id WHERE users.username = '${username}';`;
+  try {
+    const result = await db.send_sql(search);
+    const formattedData = {
+      results: result.map((item) => ({
+        group_name: item.group_name,
+      })),
+    };
+
+    res.status(200).json(formattedData);
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+};
+
+var get_messages = async function (req, res) {
+  const username = req.body.username;
+  const chat_name = req.body.chat_name;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `
+    SELECT u.username, m.message, m.timestamp
+    FROM users u
+    JOIN group_members gm ON u.user_id = gm.user_id
+    JOIN \`groups\` g ON gm.group_id = g.group_id
+    JOIN messages m ON g.group_id = m.group_id AND u.user_id = m.sender_id
+    WHERE u.username = '${username}' AND g.group_name = '${chat_name}';
+  `;
+  try {
+    const result = await db.send_sql(search);
+    const formattedData = {
+      results: result.map((item) => ({
+        username: item.username,
+        message: item.message,
+        timestamp: item.timestamp,
+      })),
+    };
+    // sort by timestamp
+    formattedData.results.sort((a, b) => {
+      return a.timestamp - b.timestamp;
+    });
+    res.status(200).json(formattedData);
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+};
+var post_leave_chat = async function (req, res) {
+  const username = req.body.username;
+  const chat_name = req.body.chat_name;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "Chat not found." });
+    return;
+  }
+
+  const chat_id = result2[0].group_id;
+
+  const search3 = `SELECT * FROM group_members WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
+  const result3 = await db.send_sql(search3);
+
+  if (result3.length == 0) {
+    res.status(403).json({ error: "User is not in chat." });
+    return;
+  }
+
+  const delete_query = `DELETE FROM group_members WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
+  const result4 = await db.insert_items(delete_query);
+
+  if (result4 > 0) {
+    res.status(201).json({ message: "User left chat." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_invite_member = async function (req, res) {
+  const username = req.body.username;
+  const chat_name = req.body.chat_name;
+  const invitee = req.body.invitee;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "Chat not found." });
+    return;
+  }
+
+  const search3 = `SELECT * FROM group_members WHERE user_id = '${user_id}' AND group_id = '${result2[0].group_id}';`;
+  const result3 = await db.send_sql(search3);
+
+  if (result3.length == 0) {
+    res.status(403).json({ error: "User is not in chat." });
+    return;
+  }
+
+  const chat_id = result2[0].group_id;
+
+  const search4 = `SELECT user_id FROM users WHERE username = '${invitee}';`;
+  const result4 = await db.send_sql(search4);
+
+  if (result3.length == 0) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+
+  const invitee_id = result4[0].user_id;
+
+  const insert = `INSERT INTO invites (group_id, user_id) VALUES ('${chat_id}', '${invitee_id}');`;
+  const result5 = await db.insert_items(insert);
+
+  if (result5 > 0) {
+    res.status(201).json({ message: "Invite sent." });
+    return;
+  }
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_join_chat = async function (req, res) {
+  const username = req.body.username;
+  const chat_name = req.body.chat_name;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const search2 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
+  const result2 = await db.send_sql(search2);
+
+  if (result2.length == 0) {
+    res.status(404).json({ error: "Chat not found." });
+    return;
+  }
+
+  const chat_id = result2[0].group_id;
+
+  const search3 = `SELECT * FROM invites WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
+
+  const result3 = await db.send_sql(search3);
+
+  if (result3.length == 0) {
+    res.status(403).json({ error: "User is not invited to chat." });
+    return;
+  }
+
+  const insert = `INSERT INTO group_members (group_id, user_id) VALUES ('${chat_id}', '${user_id}');`;
+  const result4 = await db.insert_items(insert);
+
+  if (result4 > 0) {
+    res.status(201).json({ message: "User joined chat." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+// HERE
+var post_add_hashtag = async function (req, res) {
+  const username = req.body.username;
+  const hashtag = req.body.hashtag;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const insert = `INSERT INTO user_hashtags (user_id, hashtag) VALUES ('${user_id}', '${hashtag}');`;
+
+  const result2 = await db.insert_items(insert);
+
+  if (result2 > 0) {
+    res.status(201).json({ message: "Hashtag added." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_remove_hashtag = async function (req, res) {
+  const username = req.body.username;
+  const hashtag = req.body.hashtag;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(500).json({ error: "Error querying database." });
+    return;
+  }
+
+  const user_id = result[0].user_id;
+
+  const delete_query = `DELETE FROM user_hashtags WHERE user_id = '${user_id}' AND hashtag = '${hashtag}';`;
+
+  const result2 = await db.insert_items(delete_query);
+
+  if (result2 > 0) {
+    res.status(201).json({ message: "Hashtag removed." });
+    return;
+  }
+
+  return res.status(404).json({ error: "Hashtag not found." });
+};
+
+var post_set_email = async function (req, res) {
+  const username = req.body.username;
+  const email = req.body.email;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  // update email where username = username
+  const update = `UPDATE users SET email = '${email}' WHERE username = '${username}';`;
+
+  const result = await db.insert_items(update);
+
+  if (result > 0) {
+    res.status(201).json({ message: "Email set." });
+    return;
+  }
+
+  return res.status(500).json({ error: "Error querying database." });
+};
+
+var post_set_password = async function (req, res) {
+  const username = req.params.username;
+  const password = req.body.password;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  // update password where username = username
+  helper.encryptPassword(password, async function (err, hash) {
+    if (err) {
+      res.status(400).json({ message: "Error encrypting password" });
+      return;
+    } else {
+      const update = `UPDATE users SET hashed_password = '${hash}' WHERE username = '${username}';`;
+
+      const result = await db.insert_items(update);
+
+      if (result > 0) {
+        res.status(201).json({ message: "Password set." });
+        return;
+      } else {
+        res.status(500).json({ error: "Error querying database." });
+        return;
+      }
+    }
+  });
+};
+
+var get_profile = async function (req, res) {
+  const username = req.body.username;
+
+  const search = `SELECT * FROM users WHERE username = '${username}';`;
+
+  const result = await db.send_sql(search);
+
+  if (result.length == 0) {
+    res.status(404).json({ error: "User not found." });
+    return;
+  }
+
+  const user = result[0];
+
+  res.status(200).json({ result: user });
 };
 
 var getMovie = async function (req, res) {
@@ -411,6 +982,21 @@ var routes = {
   get_movie: getMovie,
   create_post: createPost,
   get_feed: getFeed,
+  post_create_chat: create_chat,
+  post_send_message: post_send_message,
+  get_chats: get_chats,
+  get_messages: get_messages,
+  post_leave_chat: post_leave_chat,
+  post_invite_member: post_invite_member,
+  post_join_chat: post_join_chat,
+  post_add_hashtag: post_add_hashtag,
+  post_remove_hashtag: post_remove_hashtag,
+  post_set_email: post_set_email,
+  post_set_password: post_set_password,
+  get_profile: get_profile,
+  post_request_friend: post_request_friend,
+  post_accept_friend: post_accept_friend,
+  post_remove_friend: post_remove_friend,
 };
 
 module.exports = routes;
