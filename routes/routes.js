@@ -25,6 +25,7 @@ const dbsingleton = require("../models/db_access.js");
 const config = require("../config.json"); // Load configuration
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
+const e = require("cors");
 
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
@@ -50,98 +51,6 @@ var getVectorStore = async function (req) {
   }
   return vectorStore;
 };
-
-// // POST /register
-// var postRegister = async function (req, res) {
-//   // register a user with given body parameters
-//   const username = req.body.username;
-//   const password = req.body.password;
-//   const firstName = req.body.firstName;
-//   const lastName = req.body.lastName;
-//   const affiliation = req.body.affiliation;
-//   const birthday = req.body.birthday;
-//   const selfie = req.body.selfie;
-//   const email = req.body.email;
-//   const linked_nconst = req.body.linked_nconst;
-//   const img = req.body.img;
-//   // add stuff to store image to s3 bucket and get link
-
-
-//   // const linked_nconst = req.body.linked_nconst;
-
-//   console.log(username);
-//   console.log(password);
-//   // console.log(linked_nconst);
-
-//   // throw 400 error if any of username, password, email, lnked_nconst is empty
-//   if (!username || !password || !email || !linked_nconst) {
-//     res.status(400).json({
-//       error:
-//         "One or more of the fields you entered was empty, please try again.",
-//     });
-//     return;
-//   }
-
-//   // if user with same username already exists in database, throw 409 error
-//   const search = `SELECT * FROM users WHERE username = '${username}';`;
-//   console.log(search);
-//   try {
-//     const result = await db.send_sql(search);
-//     if (result.length > 0) {
-//       // if user with same username already exists in database, throw 409 error
-//       res.status(409).json({
-//         error:
-//           "An account with this username already exists, please try again.",
-//       });
-//       return;
-//     } else {
-//       helper.encryptPassword(password, async function (err, hash) {
-//         if (err) {
-//           res.status(400).json({ message: "Error encrypting password" });
-//           return;
-//         } else {
-//           // insert into users table
-//           const insert = `INSERT INTO users (username, hashed_password, first_name, last_name, affiliation, linked_nconst, birthday, email, selfie) VALUES ('${username}', '${hash}', '${firstName}', '${lastName}', '${affiliation}', '${linked_nconst}', '${birthday}', '${email}', '${selfie}');`;
-//           // try catch and await call
-//           const result = await db.insert_items(insert);
-//           if (result > 0) {
-//             res.status(200).json({ username: username });
-//             return;
-//           } else {
-//             console.log("second");
-//             console.log(err);
-//             res.status(500).json({ error: "Error querying database." });
-//             return;
-//           }
-//         }
-//       });
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({ error: "Error querying database." });
-//     return;
-//   }
-// };
-
-// var getActors = async function (req, res) {
-//   const img = req.params.img;
-
-//   try {
-//     const collection = await client.getOrCreateCollection({
-//       name: "face-api",  // This should match with your collection name in app.js
-//       embeddingFunction: null,  // Make sure this is correctly configured as in app.js
-//       metadata: { "hnsw:space": "l2" }
-//     });
-
-//     const matches = await findTopKMatches(collection, img, 5);
-//     res.status(200).json(matches);
-//     return;
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Error processing image.');
-//     return;
-//   }
-// };
 
 // POST /login
 var postLogin = async function (req, res) {
@@ -407,9 +316,7 @@ var createPost = async function (req, res) {
   // req.session.username = username;
   // req.session.user_id = 8;
 
-  if (!parent_id) {
-    parent_id = 0;
-  }
+
 
   if (helper.isLoggedIn(req, username) == false) {
     res.status(403).json({ error: "Not logged in." });
@@ -433,8 +340,13 @@ var createPost = async function (req, res) {
   } else {
     req.session.user_id = answer[0].user_id;
   }
+  let insert;
+  if (!parent_id) {
+    insert = `INSERT INTO posts (title, content, author_id) VALUES ('${title}', '${content}', '${req.session.user_id}');`;
+  } else {
+    insert = `INSERT INTO posts (title, content, author_id, parent_post) VALUES ('${title}', '${content}', '${req.session.user_id}', '${parent_id}');`;
+  }
 
-  const insert = `INSERT INTO posts (title, content, author_id, parent_post) VALUES ('${title}', '${content}', '${req.session.user_id}', '${parent_id}');`;
   const result = await db.insert_items(insert);
   if (result > 0) {
     res.status(201).json({ message: "Post created." });
