@@ -368,6 +368,7 @@ var createPost = async function (req, res) {
     return;
   }
 };
+}
 
 // GET /feed
 var getFeed = async function (req, res) {
