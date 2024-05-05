@@ -317,6 +317,8 @@ var createPost = async function (req, res) {
   // req.session.user_id = 8;
 
 
+  // parse all hashtags in content
+
 
   if (helper.isLoggedIn(req, username) == false) {
     res.status(403).json({ error: "Not logged in." });
@@ -348,6 +350,16 @@ var createPost = async function (req, res) {
   }
 
   const result = await db.insert_items(insert);
+
+  if (hashtags) {
+    for (let i = 0; i < hashtags.length; i++) {
+      const insert2 = `INSERT INTO post_hashtags (post_id, hashtag) VALUES ('${result}', '${hashtags[i]}');`;
+      const result2 = await db.insert_items(insert2);
+      if (result2 == 0) {
+        res.status(500).json({ error: "Error querying database." });
+        return;
+    }
+  }
   if (result > 0) {
     res.status(201).json({ message: "Post created." });
     return;
