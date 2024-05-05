@@ -232,16 +232,20 @@ public class FriendsOfFriendsSpark {
     }
 
     public static void main(String[] args) {
-        final FriendsOfFriendsSpark fofs = new FriendsOfFriendsSpark();
+        FriendsOfFriendsSpark fofs = new FriendsOfFriendsSpark();
         try {
-            fofs.initialize();
-            fofs.run();
+            while (True) {
+                fofs.initialize();
+                fofs.run();
+                fofs.shutdown();
+                Thread.sleep(10); // make this longer when done
+            }
         } catch (final IOException ie) {
             logger.error("IO error occurred: " + ie.getMessage(), ie);
         } catch (final InterruptedException e) {
             logger.error("Interrupted: " + e.getMessage(), e);
-        } finally {
-            fofs.shutdown();
+        } catch (final Exception e) {
+            logger.error("Error occurred: " + e.getMessage(), e);
         }
     }
 }
