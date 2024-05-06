@@ -215,7 +215,7 @@ var getFeed = async function (req, res) {
 //   const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
 //     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
 
-  const search = `SELECT * FROM posts;`
+  const search = `SELECT * FROM posts p JOIN users u ON p.author_id = u.user_id JOIN comments c ON c.parent_post = p.post_id JOIN likes l ON l.post_id = p.post_id ORDER BY p.time DESC;`
   try {
     const result = await db.send_sql(search);
     const formattedData = {
@@ -224,21 +224,96 @@ var getFeed = async function (req, res) {
         caption: item.caption,
         time: item.time,
         author_id: item.author_id,
+        username: item.username,
         image: item.image,
       })),
     };
     res.status(200).json(formattedData);
   } catch (err) {
     console.log("third");
-    res.status(500).json({ error: "Error querying database." });
+    res.status(500).json({ error: "Error querying database." +err});
     return;
   }
 };
+
+
+var likePost = async function (req, res) {
+  // TODO: add to posts table
+  const username = req.params.username;
+  const post_id = req.body.post_id;
+  // req.session.username = username;
+  // req.session.user_id = 8;
+
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  try {
+    // Check if the user has already liked the post
+    const searchLike = `SELECT * FROM likes WHERE user_id = '${req.session.user_id}' AND post_id = '${post_id}';`;
+    const likeResult = await db.send_sql(searchLike);
+    if (likeResult.length > 0) {
+      res.status(409).json({ error: "Post already liked." });
+      return;
+    }
+
+  const insertQuery = `INSERT INTO likes (post_id, user_id) VALUES ('${post_id}', '${req.session.user_id}');`;
+    const ans = await db.send_sql(insertQuery);
+    if (ans.length == 0) {
+        res.status(500).json({ error: "Error querying database." });
+    } else {
+        res.status(201).json({ message: "Post liked!"});
+    }
+
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." +err});
+  }
+}
+
+var getLikes = async function (req, res) {
+    const post_id = req.params.post_id;
+    try {
+
+    const insertQuery = `SELECT COUNT (*) AS num_likes FROM likes WHERE post_id = ${post_id}`;
+      const ans = await db.send_sql(insertQuery);
+      if (ans.length == 0) {
+          res.status(500).json({ error: "Error querying database." });
+      } else {
+          res.status(201).json(ans.num_likes);
+      }
+  
+    } catch (err) {
+      res.status(500).json({ error: "Error querying database." +err});
+    }
+  }
+
+var getLikedByUser = async function (req, res) {
+    const post_id = req.params.post_id;
+    try {
+
+    const likedByUserQuery = `SELECT * FROM likes WHERE post_id = ${post_id} AND user_id = ${req.session.user_id};`;
+        const ans = await db.send_sql(likedByUserQuery);
+        if (ans.length == 0) {
+            res.status(500).json(false);
+        } else {
+            res.status(201).json(true);
+        }
+
+    } catch (err) {
+        res.status(500).json({ error: "Error querying database." +err});
+    }
+}
+
+
 var routes = {
     upload_profile_photo: uploadProfilePhoto,
     get_profile_photo: getProfilePhoto,
     get_feed: getFeed,
-    create_post: createPost
+    create_post: createPost,
+    like_post: likePost,
+    get_likes: getLikes,
+    get_liked_by_user: getLikedByUser,
   };
   
   module.exports = routes;
