@@ -54,8 +54,10 @@ function register_routes(app) {
   app.post("/:username/uploadProfilePhoto", feed_routes.upload_profile_photo);
   app.get("/:username/profilePhoto", feed_routes.get_profile_photo);
   app.post("/:username/likePost", feed_routes.like_post);
+  app.post("/:username/unlikePost", feed_routes.unlike_post);
+
   app.get("/:post_id/getLikes", feed_routes.get_likes);
-  app.get("/:post_id/getLikedByUser", feed_routes.get_liked_by_user);
+  app.get("/:post_id/:username/getLikedByUser", feed_routes.get_liked_by_user);
 
 
 

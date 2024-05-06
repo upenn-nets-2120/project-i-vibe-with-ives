@@ -215,7 +215,7 @@ var getFeed = async function (req, res) {
 //   const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
 //     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
 
-  const search = `SELECT * FROM posts p JOIN users u ON p.author_id = u.user_id JOIN comments c ON c.parent_post = p.post_id JOIN likes l ON l.post_id = p.post_id ORDER BY p.time DESC;`
+  const search = `SELECT DISTINCT p.post_id, p.caption, p.time, p.author_id, u.username, p.image FROM posts p LEFT JOIN users u ON p.author_id = u.user_id ORDER BY p.time DESC;`
   try {
     const result = await db.send_sql(search);
     const formattedData = {
@@ -225,7 +225,7 @@ var getFeed = async function (req, res) {
         time: item.time,
         author_id: item.author_id,
         username: item.username,
-        image: item.image,
+        image: item.image
       })),
     };
     res.status(200).json(formattedData);
@@ -271,6 +271,38 @@ var likePost = async function (req, res) {
   }
 }
 
+var unlikePost = async function (req, res) {
+    const username = req.params.username;
+    const post_id = req.body.post_id;
+
+    if (helper.isLoggedIn(req, username) == false) {
+        res.status(403).json({ error: "Not logged in." });
+        return;
+    }
+
+    try {
+        // Check if the user has already liked the post
+        const searchLike = `SELECT * FROM likes WHERE user_id = '${req.session.user_id}' AND post_id = '${post_id}';`;
+        const likeResult = await db.send_sql(searchLike);
+        if (likeResult.length === 0) {
+            res.status(404).json({ error: "Post not liked yet." });
+            return;
+        }
+
+        // Delete the like from the database
+        const deleteQuery = `DELETE FROM likes WHERE post_id = '${post_id}' AND user_id = '${req.session.user_id}';`;
+        const deleteResult = await db.send_sql(deleteQuery);
+        if (deleteResult.affectedRows === 0) { // This depends on your SQL driver
+            res.status(500).json({ error: "Error querying database." });
+        } else {
+            res.status(200).json({ message: "Post unliked successfully!" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "Error querying database. " + err });
+    }
+}
+
+
 var getLikes = async function (req, res) {
     const post_id = req.params.post_id;
     try {
@@ -280,7 +312,7 @@ var getLikes = async function (req, res) {
       if (ans.length == 0) {
           res.status(500).json({ error: "Error querying database." });
       } else {
-          res.status(201).json(ans.num_likes);
+          res.status(201).json(ans[0].num_likes);
       }
   
     } catch (err) {
@@ -290,9 +322,11 @@ var getLikes = async function (req, res) {
 
 var getLikedByUser = async function (req, res) {
     const post_id = req.params.post_id;
+    const username = req.params.username;
+
     try {
 
-    const likedByUserQuery = `SELECT * FROM likes WHERE post_id = ${post_id} AND user_id = ${req.session.user_id};`;
+    const likedByUserQuery = `SELECT * FROM likes l LEFT JOIN users u ON l.user_id = u.user_id WHERE l.post_id = ${post_id} AND u.username = '${username}';`;
         const ans = await db.send_sql(likedByUserQuery);
         if (ans.length == 0) {
             res.status(500).json(false);
@@ -312,6 +346,7 @@ var routes = {
     get_feed: getFeed,
     create_post: createPost,
     like_post: likePost,
+    unlike_post: unlikePost,
     get_likes: getLikes,
     get_liked_by_user: getLikedByUser,
   };

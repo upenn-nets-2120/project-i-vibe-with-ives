@@ -60,8 +60,8 @@ export default function Home() {
 
         {posts.map((post) => (
             <PostComponent
-              key={post.id}
-              id={post.id}
+              key={post.post_id}
+              id={post.post_id}
               title={post.caption}
               user={post.username} // Assuming the user is a property you want to display
               description={post.caption}
