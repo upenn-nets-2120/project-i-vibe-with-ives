@@ -22,7 +22,7 @@ const {
 const { Chroma } = require("@langchain/community/vectorstores/chroma");
 
 const dbsingleton = require("../models/db_access.js");
-const config = require("../config.json"); // Load configuration
+const config = require("../config.json"); 
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 
@@ -93,6 +93,7 @@ var postRegister = async function (req, res) {
           const result = await db.insert_items(insert);
           if (result > 0) {
             res.status(200).json({ username: username });
+            req.session.username = username;
             return;
           } else {
             console.log("second");
@@ -886,9 +887,9 @@ var post_set_password = async function (req, res) {
 };
 
 var get_profile = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
 
-  const search = `SELECT * FROM users WHERE username = '${username}';`;
+  const search = `SELECT * FROM users WHERE username = "${username}";`;
 
   const result = await db.send_sql(search);
 
