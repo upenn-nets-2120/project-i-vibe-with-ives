@@ -86,11 +86,12 @@ var postRegister = async function (req, res) {
 };
 
 var getActors = async function (req, res) {
+    console.log("getActors");
     const img = req.body.img;
     try {
         const collection = await client.getOrCreateCollection({
-            name: "face-api",  // This should match with your collection name in app.js
-            embeddingFunction: null,  // Make sure this is correctly configured as in app.js
+            name: "face-api",
+            embeddingFunction: null,
             metadata: { "hnsw:space": "l2" }
         });
 
@@ -132,10 +133,31 @@ var getActors = async function (req, res) {
     }
 };
 
+var setActor = async function (req, res) {
+    const username = req.params.username;
+    const actor = req.body.actor;
+    const insert = `UPDATE users SET linked_nconst = '${actor}' WHERE username = '${username}';`;
+    try {
+        const result = await db.insert_items(insert);
+        if (result > 0) {
+            res.status(200).json({ username: username, actor: actor });
+            return;
+        } else {
+            res.status(500).json({ error: "Error querying database." });
+            return;
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Error querying database." });
+        return;
+    }
+};
+
 
 var routes = {
     post_register: postRegister,
     get_actors: getActors,
+    set_actor: setActor
 };
 
 module.exports = routes;

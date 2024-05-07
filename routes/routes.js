@@ -160,6 +160,7 @@ var postLogin = async function (req, res) {
       return;
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -186,10 +187,10 @@ var getFriends = async function (req, res) {
   const username = req.params.username;
   // req.session.username = username;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `SELECT u2.username AS friend_username
   FROM users u1
@@ -922,7 +923,7 @@ var post_set_password = async function (req, res) {
 };
 
 var get_profile = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
 
   const search = `SELECT * FROM users WHERE username = '${username}';`;
 

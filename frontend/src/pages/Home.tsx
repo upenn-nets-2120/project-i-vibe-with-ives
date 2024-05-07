@@ -9,6 +9,7 @@ import PostComponent from '../components/PostComponent';
 import { Box, Drawer, AppBar, Toolbar, Typography, InputBase, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
+axios.defaults.withCredentials = true;
 
 export default function Home() {
   const { username } = useParams();

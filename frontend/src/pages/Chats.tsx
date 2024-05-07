@@ -17,6 +17,8 @@ interface Message {
     message: string;
 }
 
+axios.defaults.withCredentials = true;
+
 export default function Chats() {
     const { username } = useParams();
     const rootURL = config.serverRootURL;
