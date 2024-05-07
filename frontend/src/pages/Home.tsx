@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import CreatePostComponent from '../components/CreatePostComponent';
 import PostComponent from '../components/PostComponent';
 
+axios.defaults.withCredentials = true;
 
 export default function Home() {
   const { username } = useParams();
@@ -20,6 +21,7 @@ export default function Home() {
       const response = await axios.get(`${rootURL}/${username}/feed`);
       setPosts(response.data.results); // assuming the data is in the results field
     } catch (error) {
+      alert("Failed to fetch posts");
       console.error("Failed to fetch posts:", error);
     }
   };
@@ -62,9 +64,8 @@ export default function Home() {
             <PostComponent
               key={post.post_id}
               id={post.post_id}
-              title={post.caption}
               user={post.username} // Assuming the user is a property you want to display
-              description={post.caption}
+              caption={post.caption}
               imageUrl={post.image}
             />
           ))}

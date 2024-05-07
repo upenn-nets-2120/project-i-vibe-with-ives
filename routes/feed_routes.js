@@ -428,12 +428,28 @@ var get_hashtags = async function (req, res) {
   // get user_id of user with username username
   const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
   const answer = await db.send_sql(search);
-  if (answer.length > 0) {
-      res.status(200).json({ result: answer });
-      return;
-  } else {
-    res.status(500).json({ message: "There are no hashtags." });
+  if (ans.length == 0) {
+    res.status(200).json([]);
     return;
+  } else {
+      res.status(200).json(ans);
+      return;
+  }
+}
+
+var get_top_hashtags = async function (req, res) {
+  const query = `SELECT hashtag, COUNT(*) AS occurrence
+  FROM hashtags
+  GROUP BY hashtag
+  ORDER BY occurrence DESC
+  LIMIT 10;`;
+  const answer = await db.send_sql(search);
+  if (ans.length == 0) {
+    res.status(200).json([]);
+    return;
+  } else {
+      res.status(200).json(ans);
+      return;
   }
 }
 
@@ -451,7 +467,8 @@ var routes = {
     get_liked_by_user: getLikedByUser,
     create_comment: create_comment,
     get_comments: getComments,
-    get_hashtags: get_hashtags
+    get_hashtags: get_hashtags,
+    get_top_hashtags: get_top_hashtags
   };
   
   module.exports = routes;
