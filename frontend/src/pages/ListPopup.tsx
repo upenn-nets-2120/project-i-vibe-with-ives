@@ -33,15 +33,15 @@ const ListPopup = ({
         `http://localhost:8080/${activeUser}/friends`
       );
 
-      console.log(response.data.result);
-      setFriends(response.data.result);
+      // console.log(response.data.results);
+      setFriends(response.data.results);
 
       const response2 = await axios.get(
         `http://localhost:8080/${activeUser}/recommendations`
       );
 
-      console.log(response2.data.result);
-      setRecommendations(response2.data.result);
+      // console.log(response2.data.results);
+      setRecommendations(response2.data.results);
     } catch (error) {
       setFriends([{ friend_username: "Error fetching friends" }]);
       setRecommendations([
