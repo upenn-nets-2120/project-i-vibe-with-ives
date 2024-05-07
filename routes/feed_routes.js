@@ -34,9 +34,9 @@ const PORT = config.serverPort;
 async function getS3Object(bucket, objectKey) {
 
   const credentials = fromIni({
-    accessKeyId: "ASIA3I76JENOQ2FJKFKW",
-    secretAccessKey: "Df7BnMSAz60fhtdejs/ae8s0gzNr5rhrM2Q0xrZd",
-    sessionToken: "IQoJb3JpZ2luX2VjEAYaCXVzLXdlc3QtMiJHMEUCIC3CG6ZBYyI+Qf0GhA7wZvX37r1rHZCzhZTexoh9FqocAiEA0Ak6qnhPVxBiVjpRFcDKAOLvU8wngtkg6iQOX7pciMMqnQIITxABGgw3NzUyMzgwMDE1MDEiDB0l+sGMmYk/wOYOnyr6ARN//ILJmJoS0iV4AVlQ98YgonURpwTFv6+oQHMLq7UYPClD9ws9VFHeI9rdixjOCtpWMKe4pgoDm3Kwaf47iAclxutDzTfmTDmG0dSI+s+4CT1AANM10KCKWUjjxO/oQZ2BbKrndy3Ui1tduQOkqgHAPVYabCBSyHbOdDHY518inwlWcPfk5ViwjXmX4ORXqMGCcuPa1Gl43SSolDB84bhxyim26tdNdtp8dUxnFl24hk963BbFF9XKHAlYKNbgOoQlrh+6ibXLDATAauTMDiZP9LtIh47B+iJW+xeKI8PR/WhIF0LNBnkS2b1uorrk9QG0LG6U9h8QAoQwkoeWsQY6nQEPJOB36yLtUnLicbE+nyI+xbH4N5ASNKRck+erX366GuSevtyGJSLwr3OnIY/H6myjoQDO+W5v510EtJPQeJ0tNtQj5v1p+59Mq8XjjtvERPUWY7GLmF3Kbq4Jb4Gn2t1lLO+HOibnTDyZDcJDc6egoZRb6szqkyJxKEPu64eA0cqwaauWeonXoOYuLLGVAxZQ4hMmJBsI82T38YPd"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    sessionToken: process.env.AUTH_TOKEN
   });
   const s3Client = new S3Client({region: "us-east-1", credentials: credentials });
   
