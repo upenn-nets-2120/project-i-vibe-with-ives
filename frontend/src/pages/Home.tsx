@@ -6,19 +6,22 @@ import config from '../../config.json';
 import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import CreatePostComponent from '../components/CreatePostComponent';
 import PostComponent from '../components/PostComponent';
-import { Box, Drawer, AppBar, Toolbar, Typography, InputBase, IconButton } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 
 
 export default function Home() {
   const { username } = useParams();
   const rootURL = config.serverRootURL;
   const [posts, setPosts] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState(""); // Search term state
 
   const fetchData = async () => {
-    const response = await axios.get(`${rootURL}/${username}/feed`);
-    setPosts(response.data.results);
+    try {
+      const response = await axios.get(`${rootURL}/${username}/feed`);
+      setPosts(response.data.results); // assuming the data is in the results field
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    }
   };
 
   const updatePosts = () => {
@@ -55,12 +58,16 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '20px' }}>
 
-          <PostComponent title={"placeholder"} user={"zora"} description={"dog"} imageUrl={'../../golden-retriever-personality-1024x739.jpeg'} />
-          <PostComponent title={"placeholder"} user={"zora"} description={"dog"} imageUrl={'../../golden-retriever-personality-1024x739.jpeg'} />
-
-          {/* {posts.map((post: { id: number, title: string }) => (
-          <div key={post.id}>{post.title}</div>
-        ))} */}
+        {posts.map((post) => (
+            <PostComponent
+              key={post.post_id}
+              id={post.post_id}
+              title={post.caption}
+              user={post.username} // Assuming the user is a property you want to display
+              description={post.caption}
+              imageUrl={post.image}
+            />
+          ))}
         </div>
 
       </div>

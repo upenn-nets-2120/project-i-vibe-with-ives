@@ -26,7 +26,9 @@ const config = require("../config.json"); // Load configuration
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 const e = require("cors");
-
+const { fromIni } = require("@aws-sdk/credential-provider-ini");
+const {S3Client, GetObjectCommand, PutObjectCommand} = require("@aws-sdk/client-s3");
+const fs = require('fs').promises;
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
 // initializeFaceModels().catch(console.error);
@@ -35,6 +37,8 @@ const e = require("cors");
 const db = dbsingleton;
 
 const PORT = config.serverPort;
+
+
 
 var vectorStore = null;
 
@@ -51,6 +55,7 @@ var getVectorStore = async function (req) {
   }
   return vectorStore;
 };
+
 
 // POST /login
 var postLogin = async function (req, res) {
@@ -92,6 +97,7 @@ var postLogin = async function (req, res) {
       return;
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -300,124 +306,6 @@ var getFriendRecs = async function (req, res) {
     };
     res.status(200).json(formattedData);
   } catch (err) {
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  }
-};
-
-// POST /createPost
-var createPost = async function (req, res) {
-  // TODO: add to posts table
-  const title = req.body.title;
-  const content = req.body.content;
-  let parent_id = req.body.parent_id;
-
-  const username = req.params.username;
-  // req.session.username = username;
-  // req.session.user_id = 8;
-
-
-  // parse all hashtags in content
-
-
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
-
-  if (!title || !content || !helper.isOK(title) || !helper.isOK(content)) {
-    res.status(400).json({
-      error:
-        "One or more of the fields you entered was empty, please try again.",
-    });
-    return;
-  }
-
-  // get user_id of user with username username
-  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
-  const answer = await db.send_sql(search);
-  if (answer.length == 0) {
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  } else {
-    req.session.user_id = answer[0].user_id;
-  }
-  let insert;
-  if (!parent_id) {
-    insert = `INSERT INTO posts (title, content, author_id) VALUES ('${title}', '${content}', '${req.session.user_id}');`;
-  } else {
-    insert = `INSERT INTO posts (title, content, author_id, parent_post) VALUES ('${title}', '${content}', '${req.session.user_id}', '${parent_id}');`;
-  }
-
-  const result = await db.insert_items(insert);
-
-  if (hashtags) {
-    for (let i = 0; i < hashtags.length; i++) {
-      const insert2 = `INSERT INTO post_hashtags (post_id, hashtag) VALUES ('${result}', '${hashtags[i]}');`;
-      const result2 = await db.insert_items(insert2);
-      if (result2 == 0) {
-        res.status(500).json({ error: "Error querying database." });
-        return;
-    }
-  }
-  if (result > 0) {
-    res.status(201).json({ message: "Post created." });
-    return;
-  } else {
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  }
-};
-}
-
-// GET /feed
-var getFeed = async function (req, res) {
-  // TODO: get the correct posts to show on current user's feed
-  // get all posts from users that the current user follows and their own posts
-  const username = req.params.username;
-  req.session.username = username;
-
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
-
-  // get user_id of user with username username
-  const initSearch = `SELECT user_id FROM users WHERE username = '${username}';`;
-  try {
-    const result = await db.send_sql(initSearch);
-    if (result.length == 0) {
-      console.log("first");
-      res.status(500).json({ error: "Error querying database." });
-      return;
-    } else {
-      req.session.user_id = result[0].user_id;
-      req.session.linked_id = result[0].linked_nconst;
-    }
-  } catch (err) {
-    console.log("second");
-    console.log(err);
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  }
-
-  //get user id of all users that the current user follows and themselves
-  const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
-    SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
-
-  try {
-    const result = await db.send_sql(search);
-    const formattedData = {
-      results: result.map((item) => ({
-        username: item.username,
-        parent_post: item.parent_post,
-        title: item.title,
-        content: item.content,
-      })),
-    };
-    res.status(200).json(formattedData);
-  } catch (err) {
-    console.log("third");
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -905,8 +793,6 @@ var routes = {
   get_friends: getFriends,
   get_friend_recs: getFriendRecs,
   get_movie: getMovie,
-  create_post: createPost,
-  get_feed: getFeed,
   post_create_chat: create_chat,
   post_send_message: post_send_message,
   get_chats: get_chats,
