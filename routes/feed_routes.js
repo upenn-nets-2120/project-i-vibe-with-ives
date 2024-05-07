@@ -292,7 +292,7 @@ var unlikePost = async function (req, res) {
         // Delete the like from the database
         const deleteQuery = `DELETE FROM likes WHERE post_id = '${post_id}' AND user_id = '${req.session.user_id}';`;
         const deleteResult = await db.send_sql(deleteQuery);
-        if (deleteResult.affectedRows === 0) { // This depends on your SQL driver
+        if (deleteResult.affectedRows === 0) {
             res.status(500).json({ error: "Error querying database." });
         } else {
             res.status(200).json({ message: "Post unliked successfully!" });
