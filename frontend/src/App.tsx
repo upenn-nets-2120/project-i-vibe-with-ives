@@ -6,6 +6,7 @@ import Notifications from "./pages/Notifications";
 import Friends from "./pages/Friends";
 import Settings from "./pages/Settings";
 import Profile from "./pages/MyProfile";
+import UserProfile from "./pages/UserProfile";
 import Signup from "./pages/Signup";
 
 
@@ -20,7 +21,7 @@ function App() {
         <Route path='/:username/notifications' element={<Notifications />} />
         <Route path='/:username/friends' element={<Friends />} />
         <Route path='/:username/profile' element={<Profile />} />
-        {/* <Route path='/:username/userProfile' element={<UserProfile activeUser= />} /> */}
+        <Route path='/:username/:activeUser/userProfile' element={<UserProfile />} />
         <Route path='/:username/settings' element={<Settings />} />
       </Routes>
     </BrowserRouter>

@@ -7,14 +7,16 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import { Post } from "./MyProfile";
 import { Profile } from "./MyProfile";
-import { useParams } from "react-router-dom";
+import Sidebar from '../components/Sidebar';
+import { useNavigate, useParams } from "react-router-dom";
 
 // usestate import
 import { useState } from "react";
 
-const UserProfile = ({ activeUser }: { activeUser: string }) => {
+const UserProfile = () => {
   // const { username, name, actor, posts } = props;
-  const username = useParams();
+  const navigate = useNavigate();
+  const { username, activeUser } = useParams();
   const [profile, setProfile] = useState<Profile>({
     user_id: 10,
     username: "agshruti",
@@ -113,39 +115,41 @@ const UserProfile = ({ activeUser }: { activeUser: string }) => {
   };
 
   return (
-    <div className="profile-container">
-      <div className="profile-top">
-        <div className="profile-picture">
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcVxC8L9WXWSVzQAshqEzQKvF0kl8vTiZoYANDEZRdDQ&s"
-            alt="Profile"
-          />
-        </div>
-        <div className="profile-info">
-          <h2>@ {profile.username}</h2>
-          <p>
-            {profile.first_name} {profile.last_name} is now linked to
-            {profile.affiliation}
-          </p>
-          <div className="profile-buttons">
-            <button onClick={toggleFriends} className="btn btn-success">
-              Friends
-            </button>
-            <button onClick={friendRequest} className="btn btn-success">
-              {buttonText}
-            </button>
-            <button className="btn btn-success">Edit Profile</button>
-            <ListPopup
-              show={showPop}
-              handleClose={toggleFriends}
-              isFriends={true}
-              activeUser={profile.username}
+    <div className="w-screen h-screen flex">
+      <Sidebar />
+      <div className="profile-container">
+        <div className="profile-top">
+          <div className="profile-picture">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcVxC8L9WXWSVzQAshqEzQKvF0kl8vTiZoYANDEZRdDQ&s"
+              alt="Profile"
             />
           </div>
+          <div className="profile-info">
+            <h2>@ {profile.username}</h2>
+            <p>
+              {profile.first_name} {profile.last_name} is now linked to
+              {profile.affiliation}
+            </p>
+            <div className="profile-buttons">
+              <button onClick={toggleFriends} className="btn btn-success">
+                Friends
+              </button>
+              <button onClick={friendRequest} className="btn btn-success">
+                {buttonText}
+              </button>
+              <ListPopup
+                show={showPop}
+                handleClose={toggleFriends}
+                isFriends={true}
+                activeUser={activeUser ? activeUser : profile.username}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      <div>
-        <PostProfileHandler posts={posts} />
+        <div>
+          <PostProfileHandler posts={posts} />
+        </div>
       </div>
     </div>
   );

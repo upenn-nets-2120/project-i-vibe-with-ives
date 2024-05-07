@@ -20,7 +20,7 @@ const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 const e = require("cors");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
-const {S3Client, GetObjectCommand, PutObjectCommand} = require("@aws-sdk/client-s3");
+const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs').promises;
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
@@ -38,8 +38,8 @@ async function getS3Object(bucket, objectKey) {
     secretAccessKey: "Df7BnMSAz60fhtdejs/ae8s0gzNr5rhrM2Q0xrZd",
     sessionToken: "IQoJb3JpZ2luX2VjEAYaCXVzLXdlc3QtMiJHMEUCIC3CG6ZBYyI+Qf0GhA7wZvX37r1rHZCzhZTexoh9FqocAiEA0Ak6qnhPVxBiVjpRFcDKAOLvU8wngtkg6iQOX7pciMMqnQIITxABGgw3NzUyMzgwMDE1MDEiDB0l+sGMmYk/wOYOnyr6ARN//ILJmJoS0iV4AVlQ98YgonURpwTFv6+oQHMLq7UYPClD9ws9VFHeI9rdixjOCtpWMKe4pgoDm3Kwaf47iAclxutDzTfmTDmG0dSI+s+4CT1AANM10KCKWUjjxO/oQZ2BbKrndy3Ui1tduQOkqgHAPVYabCBSyHbOdDHY518inwlWcPfk5ViwjXmX4ORXqMGCcuPa1Gl43SSolDB84bhxyim26tdNdtp8dUxnFl24hk963BbFF9XKHAlYKNbgOoQlrh+6ibXLDATAauTMDiZP9LtIh47B+iJW+xeKI8PR/WhIF0LNBnkS2b1uorrk9QG0LG6U9h8QAoQwkoeWsQY6nQEPJOB36yLtUnLicbE+nyI+xbH4N5ASNKRck+erX366GuSevtyGJSLwr3OnIY/H6myjoQDO+W5v510EtJPQeJ0tNtQj5v1p+59Mq8XjjtvERPUWY7GLmF3Kbq4Jb4Gn2t1lLO+HOibnTDyZDcJDc6egoZRb6szqkyJxKEPu64eA0cqwaauWeonXoOYuLLGVAxZQ4hMmJBsI82T38YPd"
   });
-  const s3Client = new S3Client({region: "us-east-1", credentials: credentials });
-  
+  const s3Client = new S3Client({ region: "us-east-1", credentials: credentials });
+
   // Create the parameters for the GetObjectCommand
   const getObjectParams = {
     Bucket: bucket,
@@ -63,42 +63,44 @@ async function getS3Object(bucket, objectKey) {
 
 async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
   try {
-      // Read the image file from local filesystem
-      const fileContent = await fs.readFile(filePath);
-      
-      // Create an instance of the S3 client
-      const credentials = fromIni({
-        accessKeyId: "ASIA3I76JENOQT2INU2N",
-        secretAccessKey: "2Sfa5bq9zqbNVuhNt3NBVstxFdlNff8uGOvrrwYC",
-        sessionToken: "IQoJb3JpZ2luX2VjEGgaCXVzLXdlc3QtMiJHMEUCIH7b4idQ+GIKpt0nlBw2Wja7YgInOVV0I4uaVgnyrZDzAiEA4exCyOCrV3IHEah2oWZXEzYXVdShjlVW4cKTfs43e/sqpgIIwf//////////ARABGgw3NzUyMzgwMDE1MDEiDC61d2QZ+gvBX5UyHyr6AeeY9gXMaeVsKu2Ieg2EfXXWh0obdX/p7ZDnMoHLbq17VUo4xe5ofdKnu3xZnCY8zgc7gtsZFSUruXpPiL59GwApThi60CNgYJIIpOVIk3OocH6wC+OGTQfBDy+BAtFtgTqW21AFP8U0ISHEjxIpNxe4G3mu8kUxakTnvdTFgFRKDqRCoqv2y3bLLfmC8NXIXw/0Z6TLeJJq105iXPNlgHG3kQG9bHIsF7Zki7eIk2ojfMhIWeYy3Vq9aFPIy/9dDkuxfwCs41F3JCajFuKPYH0Nf1SRAIP+oYk+el3EeLpgOPoUqeHXiiYI8OTGmIYCoGXUqJE6/FdvgJEwpPzjsQY6nQHYY8S7yzQnsojsvjMc6z2NEkus555qCBg2tHi+L/UKsuid3m4C81TC+XH/uPIfvwQMBDrV9+T/qPhSXDonKaV2CVkBLFyH+gUuMgSH6rvi0PIiT7sL0KapEI0JmxYiXaddqMw3dAPqn/VRnxpYOJ0O9Om1x0Xsfc4Fq6Y0MT9ftyQZSihLdsy/anvbGRQ6HmjsSdQf82VXFoYajpKK"
-      });
-      const s3Client = new S3Client({region: "us-east-1", credentials: credentials });
+    // Read the image file from local filesystem
+    const fileContent = await fs.readFile(filePath);
 
-      // Create the PutObject command with necessary parameters
-      const putObjectParams = {
-          Bucket: s3Bucket,
-          Key: s3Key,
-          Body: fileContent,
-          ContentType: 'image/jpeg' // Set the content type as image/jpeg or as appropriate
-      };
+    // Create an instance of the S3 client
+    const credentials = fromIni({
+      accessKeyId: "ASIA3I76JENOQT2INU2N",
+      secretAccessKey: "2Sfa5bq9zqbNVuhNt3NBVstxFdlNff8uGOvrrwYC",
+      sessionToken: "IQoJb3JpZ2luX2VjEGgaCXVzLXdlc3QtMiJHMEUCIH7b4idQ+GIKpt0nlBw2Wja7YgInOVV0I4uaVgnyrZDzAiEA4exCyOCrV3IHEah2oWZXEzYXVdShjlVW4cKTfs43e/sqpgIIwf//////////ARABGgw3NzUyMzgwMDE1MDEiDC61d2QZ+gvBX5UyHyr6AeeY9gXMaeVsKu2Ieg2EfXXWh0obdX/p7ZDnMoHLbq17VUo4xe5ofdKnu3xZnCY8zgc7gtsZFSUruXpPiL59GwApThi60CNgYJIIpOVIk3OocH6wC+OGTQfBDy+BAtFtgTqW21AFP8U0ISHEjxIpNxe4G3mu8kUxakTnvdTFgFRKDqRCoqv2y3bLLfmC8NXIXw/0Z6TLeJJq105iXPNlgHG3kQG9bHIsF7Zki7eIk2ojfMhIWeYy3Vq9aFPIy/9dDkuxfwCs41F3JCajFuKPYH0Nf1SRAIP+oYk+el3EeLpgOPoUqeHXiiYI8OTGmIYCoGXUqJE6/FdvgJEwpPzjsQY6nQHYY8S7yzQnsojsvjMc6z2NEkus555qCBg2tHi+L/UKsuid3m4C81TC+XH/uPIfvwQMBDrV9+T/qPhSXDonKaV2CVkBLFyH+gUuMgSH6rvi0PIiT7sL0KapEI0JmxYiXaddqMw3dAPqn/VRnxpYOJ0O9Om1x0Xsfc4Fq6Y0MT9ftyQZSihLdsy/anvbGRQ6HmjsSdQf82VXFoYajpKK"
+    });
+    const s3Client = new S3Client({ region: "us-east-1", credentials: credentials });
 
-      // Execute the PutObject command
-      const data = await s3Client.send(new PutObjectCommand(putObjectParams));
-      console.log("Image upload successful", data);
+    // Create the PutObject command with necessary parameters
+    const putObjectParams = {
+      Bucket: s3Bucket,
+      Key: s3Key,
+      Body: fileContent,
+      ContentType: 'image/jpeg' // Set the content type as image/jpeg or as appropriate
+    };
+
+    // Execute the PutObject command
+    const data = await s3Client.send(new PutObjectCommand(putObjectParams));
+    console.log("Image upload successful", data);
   } catch (err) {
-      // Handle errors
-      console.error("Error during file upload:", err);
-      throw err;
+    // Handle errors
+    console.error("Error during file upload:", err);
+    throw err;
   }
 }
 
-var uploadProfilePhoto = async function (req,res) {
+var uploadProfilePhoto = async function (req, res) {
   const imgName = req.body.imgName;
-//   const imgName = "frontend/golden-retriever-personality-1024x739.jpeg";
-  uploadImageFileToS3(imgName,"pennstagram-pics-i-vibe-with-ives", req.params.username)
-  .then(() => {res.status(201).json({ message: "Upload successful!" });      
-  return;})
-  .catch((error) => res.status(400).json({message: "Upload failed:" + error}))
+  //   const imgName = "frontend/golden-retriever-personality-1024x739.jpeg";
+  uploadImageFileToS3(imgName, "pennstagram-pics-i-vibe-with-ives", req.params.username)
+    .then(() => {
+      res.status(201).json({ message: "Upload successful!" });
+      return;
+    })
+    .catch((error) => res.status(400).json({ message: "Upload failed:" + error }))
 }
 
 
@@ -118,23 +120,23 @@ var uploadProfilePhoto = async function (req,res) {
 
 // gets the s3 link to the image
 var getProfilePhoto = async function (req, res) {
-    const username = req.params.username;  
-    try {
-        const imageUrl = `https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${username}`;
-        res.status(200).json({ imageUrl: imageUrl });
-        return;
+  const username = req.params.username;
+  try {
+    const imageUrl = `https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${username}`;
+    res.status(200).json({ imageUrl: imageUrl });
+    return;
 
-    } catch (err) {
-        res.status(400).json({message: "Failed to get photo" + err.message});
-        return;
+  } catch (err) {
+    res.status(400).json({ message: "Failed to get photo" + err.message });
+    return;
 
-    }
+  }
 }
 
 
 
 
-  // POST /createPost
+// POST /createPost
 var createPost = async function (req, res) {
   // TODO: add to posts table
   const username = req.params.username;
@@ -157,38 +159,38 @@ var createPost = async function (req, res) {
   }
 
   try {
-  // get user_id of user with username username
-  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
-  const answer = await db.send_sql(search);
-  if (answer.length == 0) {
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  } else {
-    req.session.user_id = answer[0].user_id;
-  }
-  let insert;
-
-  if (caption) {
-  insert = `INSERT INTO posts (caption, author_id) VALUES ('${caption}', ${req.session.user_id});`;
-  } else {
-    insert = `INSERT INTO posts (author_id) VALUES (${req.session.user_id});`;
-  }
-  const result = await db.send_sql(insert);
-  const post_id = result.insertId.toString();
-
-  if (imageUrl) {
-  uploadImageFileToS3(imageUrl,"pennstagram-pics-i-vibe-with-ives", post_id)
-  .then(() => console.log("updated"));
-    const updatePostQuery = `UPDATE posts SET image = "https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${post_id}" WHERE post_id = ${post_id}`;
-    const ans = await db.send_sql(updatePostQuery);
-  }
-  if (hashtags) {
-    const hashtagArray = hashtags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-    for (let tag of hashtagArray) {
-      const insertHashtag = `INSERT INTO hashtags (post_id, hashtag) VALUES ('${post_id}', '${tag}');`;
-      await db.send_sql(insertHashtag);
+    // get user_id of user with username username
+    const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+    const answer = await db.send_sql(search);
+    if (answer.length == 0) {
+      res.status(500).json({ error: "Error querying database." });
+      return;
+    } else {
+      req.session.user_id = answer[0].user_id;
     }
-  }
+    let insert;
+
+    if (caption) {
+      insert = `INSERT INTO posts (caption, author_id) VALUES ('${caption}', ${req.session.user_id});`;
+    } else {
+      insert = `INSERT INTO posts (author_id) VALUES (${req.session.user_id});`;
+    }
+    const result = await db.send_sql(insert);
+    const post_id = result.insertId.toString();
+
+    if (imageUrl) {
+      uploadImageFileToS3(imageUrl, "pennstagram-pics-i-vibe-with-ives", post_id)
+        .then(() => console.log("updated"));
+      const updatePostQuery = `UPDATE posts SET image = "https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${post_id}" WHERE post_id = ${post_id}`;
+      const ans = await db.send_sql(updatePostQuery);
+    }
+    if (hashtags) {
+      const hashtagArray = hashtags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+      for (let tag of hashtagArray) {
+        const insertHashtag = `INSERT INTO hashtags (post_id, hashtag) VALUES ('${post_id}', '${tag}');`;
+        await db.send_sql(insertHashtag);
+      }
+    }
     res.status(201).json({ message: "Post uploaded!" });
   } catch (err) {
     res.status(500).json({ error: "Error querying database." + err });
@@ -227,8 +229,8 @@ var getFeed = async function (req, res) {
   }
 
   //get user id of all users that the current user follows and themselves
-//   const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
-//     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
+  //   const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
+  //     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
 
   const search = `SELECT DISTINCT p.post_id, p.caption, p.time, p.author_id, u.username, p.image FROM posts p LEFT JOIN users u ON p.author_id = u.user_id ORDER BY p.time DESC;`
   try {
@@ -247,8 +249,9 @@ var getFeed = async function (req, res) {
     return;
 
   } catch (err) {
+    console.log(results);
     console.log("third");
-    res.status(500).json({ error: "Error querying database." +err});
+    res.status(500).json({ error: "Error querying database." + err });
     return;
   }
 };
@@ -275,125 +278,125 @@ var likePost = async function (req, res) {
       return;
     }
 
-  const insertQuery = `INSERT INTO likes (post_id, user_id) VALUES ('${post_id}', '${req.session.user_id}');`;
+    const insertQuery = `INSERT INTO likes (post_id, user_id) VALUES ('${post_id}', '${req.session.user_id}');`;
     const ans = await db.send_sql(insertQuery);
     if (ans.length == 0) {
-        res.status(500).json({ error: "Error querying database." });
-        return;
+      res.status(500).json({ error: "Error querying database." });
+      return;
 
     } else {
-        res.status(201).json({ message: "Post liked!"});
-        return;
+      res.status(201).json({ message: "Post liked!" });
+      return;
 
     }
 
   } catch (err) {
-    res.status(500).json({ error: "Error querying database." +err});
+    res.status(500).json({ error: "Error querying database." + err });
     return;
 
   }
 }
 
 var unlikePost = async function (req, res) {
-    const username = req.params.username;
-    const post_id = req.body.post_id;
+  const username = req.params.username;
+  const post_id = req.body.post_id;
 
-    if (helper.isLoggedIn(req, username) == false) {
-        res.status(403).json({ error: "Not logged in." });
-        return;
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
+
+  try {
+    // Check if the user has already liked the post
+    const searchLike = `SELECT * FROM likes WHERE user_id = '${req.session.user_id}' AND post_id = '${post_id}';`;
+    const likeResult = await db.send_sql(searchLike);
+    if (likeResult.length === 0) {
+      res.status(404).json({ error: "Post not liked yet." });
+      return;
     }
 
-    try {
-        // Check if the user has already liked the post
-        const searchLike = `SELECT * FROM likes WHERE user_id = '${req.session.user_id}' AND post_id = '${post_id}';`;
-        const likeResult = await db.send_sql(searchLike);
-        if (likeResult.length === 0) {
-            res.status(404).json({ error: "Post not liked yet." });
-            return;
-        }
+    // Delete the like from the database
+    const deleteQuery = `DELETE FROM likes WHERE post_id = '${post_id}' AND user_id = '${req.session.user_id}';`;
+    const deleteResult = await db.send_sql(deleteQuery);
+    if (deleteResult.affectedRows === 0) {
+      res.status(500).json({ error: "Error querying database." });
+      return;
 
-        // Delete the like from the database
-        const deleteQuery = `DELETE FROM likes WHERE post_id = '${post_id}' AND user_id = '${req.session.user_id}';`;
-        const deleteResult = await db.send_sql(deleteQuery);
-        if (deleteResult.affectedRows === 0) {
-            res.status(500).json({ error: "Error querying database." });
-            return;
-
-        } else {
-            res.status(200).json({ message: "Post unliked successfully!" });
-            return;
-
-        }
-    } catch (err) {
-        res.status(500).json({ error: "Error querying database. " + err });
-        return;
+    } else {
+      res.status(200).json({ message: "Post unliked successfully!" });
+      return;
 
     }
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database. " + err });
+    return;
+
+  }
 }
 
 
 var getLikes = async function (req, res) {
-    const post_id = req.params.post_id;
-    try {
+  const post_id = req.params.post_id;
+  try {
 
     const insertQuery = `SELECT COUNT (*) AS num_likes FROM likes WHERE post_id = ${post_id}`;
-      const ans = await db.send_sql(insertQuery);
-      if (ans.length == 0) {
-          res.status(500).json({ error: "Error querying database." });
-      } else {
-          res.status(201).json(ans[0].num_likes);
-          return;
-
-      }
-  
-    } catch (err) {
-      res.status(500).json({ error: "Error querying database." +err});
+    const ans = await db.send_sql(insertQuery);
+    if (ans.length == 0) {
+      res.status(500).json({ error: "Error querying database." });
+    } else {
+      res.status(201).json(ans[0].num_likes);
       return;
 
     }
+
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." + err });
+    return;
+
   }
+}
 
 var getLikedByUser = async function (req, res) {
-    const post_id = req.params.post_id;
-    const username = req.params.username;
+  const post_id = req.params.post_id;
+  const username = req.params.username;
 
-    try {
+  try {
     const likedByUserQuery = `SELECT * FROM likes l LEFT JOIN users u ON l.user_id = u.user_id WHERE l.post_id = ${post_id} AND u.username = '${username}';`;
-        const ans = await db.send_sql(likedByUserQuery);
-        if (ans.length == 0) {
-            res.status(200).json(false);
-            return;
+    const ans = await db.send_sql(likedByUserQuery);
+    if (ans.length == 0) {
+      res.status(200).json(false);
+      return;
 
-        } else {
-            res.status(201).json(true);
-            return;
-        }
-
-    } catch (err) {
-        res.status(500).json({ error: "Error querying database.", err});
+    } else {
+      res.status(201).json(true);
+      return;
     }
+
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database.", err });
+  }
 }
 
 var getComments = async function (req, res) {
   const post_id = req.params.post_id;
   try {
 
-  const insertQuery = `SELECT * FROM comments c LEFT JOIN users u ON u.user_id = c.author_id WHERE c.parent_post = ${post_id}`;
+    const insertQuery = `SELECT c.*, u.username FROM comments c LEFT JOIN users u ON u.user_id = c.author_id WHERE c.parent_post = ${post_id}`;
     const ans = await db.send_sql(insertQuery);
     if (ans.length == 0) {
       res.status(200).json([]);
       return;
     } else {
-        res.status(200).json(ans);
-        return;
+      res.status(200).json(ans);
+      return;
     }
 
   } catch (err) {
-    res.status(500).json({ error: "Error querying database." +err});
+    res.status(500).json({ error: "Error querying database." + err });
   }
 }
 
-var create_comment = async function (req, res) {  
+var create_comment = async function (req, res) {
   const username = req.params.username;
   const caption = req.body.caption;
   const post_id = req.body.post_id;
@@ -402,10 +405,10 @@ var create_comment = async function (req, res) {
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const answer = await db.send_sql(search);
   if (answer.length == 0) {
-      res.status(500).json({ error: "Error querying database." });
-      return;
+    res.status(500).json({ error: "Error querying database." });
+    return;
   } else {
-      req.session.user_id = answer[0].user_id;
+    req.session.user_id = answer[0].user_id;
   }
 
   const insert = `INSERT INTO comments (parent_post, caption, author_id) VALUES (${post_id}, '${caption}', ${req.session.user_id});`;
@@ -416,21 +419,21 @@ var create_comment = async function (req, res) {
     res.status(201).json({ message: "Comment added!" });
     return;
   } else {
-      console.log(err);
-      res.status(500).json({ error: "Error adding comment." });
-      return;
-    }
+    console.log(err);
+    res.status(500).json({ error: "Error adding comment." });
+    return;
+  }
 };
 
-var get_hashtags = async function (req, res) {  
+var get_hashtags = async function (req, res) {
   const post_id = req.params.post_id;
 
   // get user_id of user with username username
   const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
   const answer = await db.send_sql(search);
   if (answer.length > 0) {
-      res.status(200).json({ result: answer });
-      return;
+    res.status(200).json({ result: answer });
+    return;
   } else {
     res.status(500).json({ message: "There are no hashtags." });
     return;
@@ -441,17 +444,17 @@ var get_hashtags = async function (req, res) {
 
 
 var routes = {
-    upload_profile_photo: uploadProfilePhoto,
-    get_profile_photo: getProfilePhoto,
-    get_feed: getFeed,
-    create_post: createPost,
-    like_post: likePost,
-    unlike_post: unlikePost,
-    get_likes: getLikes,
-    get_liked_by_user: getLikedByUser,
-    create_comment: create_comment,
-    get_comments: getComments,
-    get_hashtags: get_hashtags
-  };
-  
-  module.exports = routes;
+  upload_profile_photo: uploadProfilePhoto,
+  get_profile_photo: getProfilePhoto,
+  get_feed: getFeed,
+  create_post: createPost,
+  like_post: likePost,
+  unlike_post: unlikePost,
+  get_likes: getLikes,
+  get_liked_by_user: getLikedByUser,
+  create_comment: create_comment,
+  get_comments: getComments,
+  get_hashtags: get_hashtags
+};
+
+module.exports = routes;

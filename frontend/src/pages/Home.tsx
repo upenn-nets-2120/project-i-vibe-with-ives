@@ -59,7 +59,7 @@ export default function Home() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '20px' }}>
 
-        {posts.map((post) => (
+          {posts.map((post) => (
             <PostComponent
               key={post.post_id}
               id={post.post_id}

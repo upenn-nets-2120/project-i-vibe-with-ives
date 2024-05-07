@@ -53,65 +53,51 @@ var send_like = async function (req, res) {
   }
 };
 
-var create_comment = async function (req, res) {
-  const username = req.params.username;
-  const caption = req.body.caption;
-  const post_id = req.body.post_id;
+// var create_comment = async function (req, res) {
+//   const username = req.params.username;
+//   const caption = req.body.caption;
+//   const post_id = req.body.post_id;
 
-  // get user_id of user with username username
-  const search = `SELECT user_id FROM users WHERE username = '${username}';`;
-  const answer = await db.send_sql(search);
-  if (answer.length == 0) {
-    res.status(500).json({ error: "Error querying database." });
-    return;
-  } else {
-    req.session.user_id = answer[0].user_id;
-  }
+//   // get user_id of user with username username
+//   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+//   const answer = await db.send_sql(search);
+//   if (answer.length == 0) {
+//     res.status(500).json({ error: "Error querying database." });
+//     return;
+//   } else {
+//     req.session.user_id = answer[0].user_id;
+//   }
 
-  const insert = `INSERT INTO comments (parent_post, caption, author_id) VALUES (${post_id}, ${caption}, ${req.session.user_id});`;
+//   const insert = `INSERT INTO comments (parent_post, caption, author_id) VALUES (${post_id}, ${caption}, ${req.session.user_id});`;
 
-  const result = await db.insert_items(insert);
+//   const result = await db.insert_items(insert);
 
-  if (result > 0) {
-    res.status(200).json({ message: "Comment added!" });
-    return;
-  } else {
-    console.log(err);
-    res.status(500).json({ error: "Error adding comment." });
-    return;
-  }
-};
+//   if (result > 0) {
+//     res.status(200).json({ message: "Comment added!" });
+//     return;
+//   } else {
+//     console.log(err);
+//     res.status(500).json({ error: "Error adding comment." });
+//     return;
+//   }
+// };
 
-var get_comments = async function (req, res) {
-  const post_id = req.params.post_id;
+// var get_comments = async function (req, res) {
+//   const post_id = req.params.post_id;
 
-  // get user_id of user with username username
-  const search = `SELECT c.*, u.username FROM comments c JOIN users u ON c.author_id = u.user_id WHERE c.parent_post = ${post_id};`;
-  const answer = await db.send_sql(search);
-  if (answer.length > 0) {
+//   // get user_id of user with username username
+//   const search = `SELECT c.*, u.username FROM comments c JOIN users u ON c.author_id = u.user_id WHERE c.parent_post = ${post_id};`;
+//   const answer = await db.send_sql(search);
+//   if (answer.length > 0) {
 
-    res.status(200).json({ result: answer });
-    return;
-  } else {
-    res.status(500).json({ message: "There are no comments." });
-    return;
-  }
-}
+//     res.status(200).json({ result: answer });
+//     return;
+//   } else {
+//     res.status(500).json({ message: "There are no comments." });
+//     return;
+//   }
+// }
 
-var get_hashtags = async function (req, res) {
-  const post_id = req.params.post_id;
-
-  // get user_id of user with username username
-  const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
-  const answer = await db.send_sql(search);
-  if (answer.length > 0) {
-    res.status(200).json({ result: answer });
-    return;
-  } else {
-    res.status(500).json({ message: "There are no hashtags." });
-    return;
-  }
-}
 
 var get_id_post = async function (req, res) {
   const post_id = req.params.post_id;
@@ -185,13 +171,9 @@ var get_user_id = async function (username) {
 var routes = {
   get_user_posts: get_user_posts,
   send_like: send_like,
-  create_comment: create_comment,
-  get_comments: get_comments,
   get_id_post: get_id_post,
   are_friends_req: are_friends_req,
   are_friends: are_friends,
-  get_hashtags: get_hashtags
-
 }
 
 module.exports = routes;

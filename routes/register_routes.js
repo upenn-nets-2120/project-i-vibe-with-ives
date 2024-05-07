@@ -61,9 +61,16 @@ function register_routes(app) {
   app.get("/:post_id/:username/getLikedByUser", feed_routes.get_liked_by_user);
 
   app.get("/:post_id/getComments", feed_routes.get_comments);
-
   app.post("/:username/createComment", feed_routes.create_comment);
-  app.get("/:post_id/getComments", feed_routes.get_comments);
   app.get("/:post_id/getHashtags", feed_routes.get_hashtags);
+
+
+  // profile stuff:
+  app.get("/:username/getPosts", profile_routes.get_user_posts);
+  app.post("/:username/:post_id/sendLike", profile_routes.send_like);
+  app.get("/:post_id/getPostById", profile_routes.get_id_post);
+  app.get("/:loggedIn/hasRequested/:username", profile_routes.are_friends_req);
+  app.get("/:loggedIn/isFriendsWith/:username", profile_routes.are_friends);
+
 
 }
