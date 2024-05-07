@@ -4,7 +4,7 @@ const actorRoutes = require("./actorRoutes.js");
 const profile_routes = require("./profile_routes.js")
 const feed_routes = require("./feed_routes.js");
 
-
+const notifs_routes = require("./notifs_routes.js")
 module.exports = {
   register_routes,
 };
@@ -72,5 +72,9 @@ function register_routes(app) {
   app.get("/:loggedIn/hasRequested/:username", profile_routes.are_friends_req);
   app.get("/:loggedIn/isFriendsWith/:username", profile_routes.are_friends);
 
+
+
+  // notification routes
+  app.get("/:username/getFriendRequests", notifs_routes.get_friend_requests);
 
 }
