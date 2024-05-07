@@ -21,12 +21,13 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import config from '../../config.json';
 
 function FriendRecsComponent() {
   const [recommendations, setRecommendations] = useState([]);
   const { username } = useParams(); // This retrieves the username from the URL
+  const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -45,14 +46,17 @@ function FriendRecsComponent() {
 
   return (
     <div className='w-screen h-screen flex flex-col items-center justify-center'>
-      <h1 className='text-2xl font-bold mb-4'>Friend Recommendations for {username}</h1>
       <div className='bg-slate-50 p-6 rounded-md'>
+      <h1 className='text-2xl font-bold mb-4'>Friend Recommendations for {username}</h1>
         {recommendations.length > 0 ? (
           <ul>
             {recommendations.map((rec, index) => (
-              <li key={index} className='p-2'>
+              <li key={index} className='p-2 text-center'>
+              {/* Link to user's profile page */}
+              <Link to={`/${username}/${rec.username}/userProfile`} className="text-blue-500 hover:text-blue-700">
                 {rec.username}
-              </li>
+              </Link>
+            </li>
             ))}
           </ul>
         ) : (
