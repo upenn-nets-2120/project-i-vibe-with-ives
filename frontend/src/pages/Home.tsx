@@ -62,9 +62,8 @@ export default function Home() {
             <PostComponent
               key={post.post_id}
               id={post.post_id}
-              title={post.caption}
               user={post.username} // Assuming the user is a property you want to display
-              description={post.caption}
+              caption={post.caption}
               imageUrl={post.image}
             />
           ))}

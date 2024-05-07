@@ -61,6 +61,8 @@ function register_routes(app) {
 
   app.get("/:post_id/getComments", feed_routes.get_comments);
 
-
+  app.post("/:username/createComment", feed_routes.create_comment);
+  app.get("/:post_id/getComments", feed_routes.get_comments);
+  app.get("/:post_id/getHashtags", feed_routes.get_hashtags);
 
 }
