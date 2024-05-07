@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import CreatePostComponent from '../components/CreatePostComponent';
 import PostComponent from '../components/PostComponent';
 
+axios.defaults.withCredentials = true;
 
 export default function Home() {
   const { username } = useParams();
