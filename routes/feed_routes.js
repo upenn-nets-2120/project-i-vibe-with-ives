@@ -126,9 +126,11 @@ var getProfilePhoto = async function (req, res) {
     res.status(200).json({ imageUrl: imageUrl });
     return;
 
-  } catch (err) {
-    res.status(400).json({ message: "Failed to get photo" + err.message });
-    return;
+
+    } catch (err) {
+
+        res.status(400).json({message: "Failed to get photo" + err.message});
+        return;
 
   }
 }
@@ -192,6 +194,7 @@ var createPost = async function (req, res) {
       }
     }
     res.status(201).json({ message: "Post uploaded!" });
+
   } catch (err) {
     res.status(500).json({ error: "Error querying database." + err });
   }
@@ -293,7 +296,6 @@ var likePost = async function (req, res) {
   } catch (err) {
     res.status(500).json({ error: "Error querying database." + err });
     return;
-
   }
 }
 
@@ -386,6 +388,7 @@ var getComments = async function (req, res) {
     if (ans.length == 0) {
       res.status(200).json([]);
       return;
+
     } else {
       res.status(200).json(ans);
       return;
@@ -431,12 +434,28 @@ var get_hashtags = async function (req, res) {
   // get user_id of user with username username
   const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
   const answer = await db.send_sql(search);
-  if (answer.length > 0) {
-    res.status(200).json({ result: answer });
+  if (answer.length == 0) {
+    res.status(200).json([]);
     return;
   } else {
-    res.status(500).json({ message: "There are no hashtags." });
+      res.status(200).json(answer);
+      return;
+  }
+}
+
+var get_top_hashtags = async function (req, res) {
+  const query = `SELECT hashtag, COUNT(*) AS occurrence
+  FROM hashtags
+  GROUP BY hashtag
+  ORDER BY occurrence DESC
+  LIMIT 10;`;
+  const answer = await db.send_sql(search);
+  if (answer.length == 0) {
+    res.status(200).json([]);
     return;
+  } else {
+      res.status(200).json(answer);
+      return;
   }
 }
 
@@ -444,17 +463,18 @@ var get_hashtags = async function (req, res) {
 
 
 var routes = {
-  upload_profile_photo: uploadProfilePhoto,
-  get_profile_photo: getProfilePhoto,
-  get_feed: getFeed,
-  create_post: createPost,
-  like_post: likePost,
-  unlike_post: unlikePost,
-  get_likes: getLikes,
-  get_liked_by_user: getLikedByUser,
-  create_comment: create_comment,
-  get_comments: getComments,
-  get_hashtags: get_hashtags
-};
-
-module.exports = routes;
+    upload_profile_photo: uploadProfilePhoto,
+    get_profile_photo: getProfilePhoto,
+    get_feed: getFeed,
+    create_post: createPost,
+    like_post: likePost,
+    unlike_post: unlikePost,
+    get_likes: getLikes,
+    get_liked_by_user: getLikedByUser,
+    create_comment: create_comment,
+    get_comments: getComments,
+    get_hashtags: get_hashtags,
+    get_top_hashtags: get_top_hashtags
+  };
+  
+  module.exports = routes;

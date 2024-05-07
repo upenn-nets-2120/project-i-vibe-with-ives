@@ -4,7 +4,6 @@ import config from '../../config.json';
 import { useParams } from 'react-router-dom';
 
 function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
-  const [title, setTitle] = useState('');
   const [caption, setCaption] = useState('');
   const [imageUrl, setImageUrl] = useState('');  // State for the image URL
   const [hashtags, setHashtags] = useState('');  // State for hashtags
@@ -14,13 +13,12 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
     e.preventDefault();
     try {
       const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, {
-        title,
         caption,
+        hashtags
       }, { withCredentials: true });
       console.log(response);
       if (response.status === 201 || response.status === 200) {
         // Clear input fields
-        setTitle('');
         setCaption('');
         setImageUrl('');  // Clear the image URL input
         setHashtags('');  // Clear the hashtags input
@@ -39,12 +37,7 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
             Create Post
           </div>
           <div className='flex space-x-4 items-center justify-between'>
-            <label htmlFor="title" className='font-semibold'>Title</label>
-            <input id="title" type="text" className='outline-none bg-white rounded-md border border-slate-100 p-2'
-              value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-          <div className='flex space-x-4 items-center justify-between'>
-            <label htmlFor="caption" className='font-semibold'>Content</label>
+            <label htmlFor="caption" className='font-semibold'>Caption</label>
             <textarea
               id="caption"
               placeholder="Caption"

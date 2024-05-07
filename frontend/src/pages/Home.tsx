@@ -6,6 +6,7 @@ import config from '../../config.json';
 import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import CreatePostComponent from '../components/CreatePostComponent';
 import PostComponent from '../components/PostComponent';
+import FriendRecsComponent from '../components/FriendRecsComponent';
 
 axios.defaults.withCredentials = true;
 
@@ -21,6 +22,7 @@ export default function Home() {
       const response = await axios.get(`${rootURL}/${username}/feed`);
       setPosts(response.data.results); // assuming the data is in the results field
     } catch (error) {
+      alert("Failed to fetch posts");
       console.error("Failed to fetch posts:", error);
     }
   };
@@ -46,6 +48,8 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 100, right: -500 }}>
 
           <CreatePostComponent updatePosts={updatePosts} />
+          <FriendRecsComponent />
+
         </div>
         {/* Search Bar */}
         <div style={{ width: '100%', padding: '10px' }}>
