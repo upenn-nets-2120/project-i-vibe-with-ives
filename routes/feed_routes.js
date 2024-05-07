@@ -98,8 +98,6 @@ var uploadProfilePhoto = async function (req,res) {
   uploadImageFileToS3(imgName,"pennstagram-pics-i-vibe-with-ives", req.params.username)
   .then(() => {res.status(201).json({ message: "Upload successful!" });      
   return;})
-  .then(() => {res.status(201).json({ message: "Upload successful!" });      
-  return;})
   .catch((error) => res.status(400).json({message: "Upload failed:" + error}))
 }
 
@@ -126,11 +124,8 @@ var getProfilePhoto = async function (req, res) {
         res.status(200).json({ imageUrl: imageUrl });
         return;
 
-        return;
 
     } catch (err) {
-        res.status(400).json({message: "Failed to get photo" + err.message});
-        return;
 
         res.status(400).json({message: "Failed to get photo" + err.message});
         return;
@@ -146,9 +141,7 @@ var createPost = async function (req, res) {
   // TODO: add to posts table
   const username = req.params.username;
   const caption = req.body.caption;
-  const caption = req.body.caption;
   const imageUrl = req.body.imageUrl;
-  const hashtags = req.body.hashtags;
   const hashtags = req.body.hashtags;
   // req.session.username = username;
   // req.session.user_id = 8;
@@ -158,10 +151,8 @@ var createPost = async function (req, res) {
     return;
   }
   if ((!caption && !imageUrl && !hashtags) || !helper.isOK(caption)) {
-  if ((!caption && !imageUrl && !hashtags) || !helper.isOK(caption)) {
     res.status(400).json({
       error:
-        "Please input at least one field.",
         "Please input at least one field.",
     });
     return;
@@ -185,15 +176,8 @@ var createPost = async function (req, res) {
     insert = `INSERT INTO posts (author_id) VALUES (${req.session.user_id});`;
   }
 
-  if (caption) {
-  insert = `INSERT INTO posts (caption, author_id) VALUES ('${caption}', ${req.session.user_id});`;
-  } else {
-    insert = `INSERT INTO posts (author_id) VALUES (${req.session.user_id});`;
-  }
   const result = await db.send_sql(insert);
   const post_id = result.insertId.toString();
-
-  if (imageUrl) {
 
   if (imageUrl) {
   uploadImageFileToS3(imageUrl,"pennstagram-pics-i-vibe-with-ives", post_id)
@@ -203,23 +187,15 @@ var createPost = async function (req, res) {
   }
   if (hashtags) {
     const hashtagArray = hashtags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+    console.log(hashtagArray);
     for (let tag of hashtagArray) {
-      const insertHashtag = `INSERT INTO hashtags (post_id, hashtag) VALUES ('${post_id}', '${tag}');`;
+      const insertHashtag = `INSERT INTO post_hashtags (post_id, hashtag) VALUES ('${post_id}', '${tag}');`;
       await db.send_sql(insertHashtag);
     }
   }
     res.status(201).json({ message: "Post uploaded!" });
-  }
-  if (hashtags) {
-    const hashtagArray = hashtags.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
-    for (let tag of hashtagArray) {
-      const insertHashtag = `INSERT INTO hashtags (post_id, hashtag) VALUES ('${post_id}', '${tag}');`;
-      await db.send_sql(insertHashtag);
-    }
-  }
-    res.status(201).json({ message: "Post uploaded!" });
+
   } catch (err) {
-    res.status(500).json({ error: "Error querying database." + err });
     res.status(500).json({ error: "Error querying database." + err });
   }
 };
@@ -275,8 +251,6 @@ var getFeed = async function (req, res) {
     res.status(200).json(formattedData);
     return;
 
-    return;
-
   } catch (err) {
     console.log("third");
     res.status(500).json({ error: "Error querying database." +err});
@@ -312,12 +286,8 @@ var likePost = async function (req, res) {
         res.status(500).json({ error: "Error querying database." });
         return;
 
-        return;
-
     } else {
         res.status(201).json({ message: "Post liked!"});
-        return;
-
         return;
 
     }
@@ -325,9 +295,6 @@ var likePost = async function (req, res) {
   } catch (err) {
     res.status(500).json({ error: "Error querying database." +err});
     return;
-
-    return;
-
   }
 }
 
@@ -356,19 +323,13 @@ var unlikePost = async function (req, res) {
             res.status(500).json({ error: "Error querying database." });
             return;
 
-            return;
-
         } else {
             res.status(200).json({ message: "Post unliked successfully!" });
-            return;
-
             return;
 
         }
     } catch (err) {
         res.status(500).json({ error: "Error querying database. " + err });
-        return;
-
         return;
 
     }
@@ -387,14 +348,10 @@ var getLikes = async function (req, res) {
           res.status(201).json(ans[0].num_likes);
           return;
 
-          return;
-
       }
   
     } catch (err) {
       res.status(500).json({ error: "Error querying database." +err});
-      return;
-
       return;
 
     }
@@ -411,17 +368,13 @@ var getLikedByUser = async function (req, res) {
             res.status(200).json(false);
             return;
 
-            res.status(200).json(false);
-            return;
 
         } else {
             res.status(201).json(true);
             return;
-            return;
         }
 
     } catch (err) {
-        res.status(500).json({ error: "Error querying database.", err});
         res.status(500).json({ error: "Error querying database.", err});
     }
 }
@@ -435,11 +388,9 @@ var getComments = async function (req, res) {
     if (ans.length == 0) {
       res.status(200).json([]);
       return;
-      res.status(200).json([]);
-      return;
+
     } else {
-        res.status(200).json(ans);
-        return;
+
         res.status(200).json(ans);
         return;
     }
@@ -484,11 +435,11 @@ var get_hashtags = async function (req, res) {
   // get user_id of user with username username
   const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
   const answer = await db.send_sql(search);
-  if (ans.length == 0) {
+  if (answer.length == 0) {
     res.status(200).json([]);
     return;
   } else {
-      res.status(200).json(ans);
+      res.status(200).json(answer);
       return;
   }
 }
@@ -500,11 +451,11 @@ var get_top_hashtags = async function (req, res) {
   ORDER BY occurrence DESC
   LIMIT 10;`;
   const answer = await db.send_sql(search);
-  if (ans.length == 0) {
+  if (answer.length == 0) {
     res.status(200).json([]);
     return;
   } else {
-      res.status(200).json(ans);
+      res.status(200).json(answer);
       return;
   }
 }
