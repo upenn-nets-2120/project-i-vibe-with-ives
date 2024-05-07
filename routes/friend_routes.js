@@ -35,6 +35,7 @@ var getRecommendations = async function (req, res) {
         username: item.username,
       })),
     };
+    console.log("hereeee");
     res.status(200).json(formattedData);
   } catch (err) {
     console.log(err);

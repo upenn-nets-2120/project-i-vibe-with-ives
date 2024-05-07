@@ -29,7 +29,7 @@ export default function PostComponent({
 
         const commentsResponse = await axios.get(`${rootURL}/${id}/getComments`);
         setComments(commentsResponse.data || []);  // Assuming `comments` is the field where comments are stored
-        console.log("comments response", commentsResponse.data);
+        // console.log("comments response", commentsResponse.data);
       } catch (error) {
         console.error('Failed to fetch likes or liked status:', error);
       }
