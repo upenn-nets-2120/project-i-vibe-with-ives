@@ -1,10 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import axios from "axios";
 import config from "../../config.json";
 
 axios.defaults.withCredentials = true;
-
 
 interface Actor {
     id: string;
@@ -17,16 +15,16 @@ interface ActorPopupProps {
     onClose: () => void;
 }
 
-export default function Actor() {
-    const [uploadedImage, setUploadedImage] = useState(null);
+const Actor: React.FC = () => {
+    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
     const [showActorPopup, setShowActorPopup] = useState(false);
-    const [actorOptions, setActorOptions] = useState([]);
+    const [actorOptions, setActorOptions] = useState<Actor[]>([]);
     const rootURL = config.serverRootURL;
-
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
+            setUploadedImage(file);
             const formData = new FormData();
             formData.append("file", file);
 
@@ -36,29 +34,42 @@ export default function Actor() {
                         "Content-Type": "multipart/form-data",
                     },
                 });
-                // Assuming the response data contains actors, update the state appropriately
-                setActorOptions(response.data);
+                // Assuming the response data contains a list of actors
+                setActorOptions(response.data.actors);
                 setShowActorPopup(true);
             } catch (error) {
-                console.error(error);
+                console.error("Error uploading image and fetching actors:", error);
             }
         }
     };
+
+    const handleSelectActor = async (actor: Actor) => {
+        try {
+            await axios.post(`${rootURL}/set_actor`, { actorId: actor.id });
+            console.log(`Actor ${actor.name} set successfully.`);
+            setShowActorPopup(false);
+        } catch (error) {
+            console.error("Error setting actor:", error);
+        }
+    };
+
     return (
-        <div className="flex space-x-4 items-center justify-between">
-            <label htmlFor="uploadedImage" className="font-semibold">
+        <div className="flex flex-col items-center justify-center">
+            <label htmlFor="uploadedImage" className="font-semibold mb-2">
                 Upload Profile Picture (required)
             </label>
             <input
                 id="uploadedImage"
                 type="file"
                 accept="image/*"
-                onChange={handleImageUpload} // Adjust this to handle file selection properly
+                onChange={handleImageUpload}
             />
+            {showActorPopup && (
+                <ActorPopup options={actorOptions} onSelect={handleSelectActor} onClose={() => setShowActorPopup(false)} />
+            )}
         </div>
     );
-}
-
+};
 
 const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) => {
     return (
@@ -77,4 +88,7 @@ const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) =
         </div>
     );
 };
+
+export default Actor;
+
 
