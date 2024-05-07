@@ -5,6 +5,7 @@ const profile_routes = require("./profile_routes.js")
 const feed_routes = require("./feed_routes.js");
 
 const notifs_routes = require("./notifs_routes.js")
+const search_routes = require("./search_routes.js");
 module.exports = {
   register_routes,
 };
@@ -76,5 +77,10 @@ function register_routes(app) {
 
   // notification routes
   app.get("/:username/getFriendRequests", notifs_routes.get_friend_requests);
+
+  // search routes
+  app.get("/:username/searchPosts", search_routes.get_similar_posts);
+  app.get("/:username/searchPeople", search_routes.get_similar_people);
+  app.get("/:username/askQuestion", search_routes.get_ask_question);
 
 }
