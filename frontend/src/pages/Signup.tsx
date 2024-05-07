@@ -18,25 +18,9 @@ export default function Signup() {
   const [linked_nconst, setLinkedNconst] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [uploadedImage, setUploadedImage] = useState(null);
+
 
   const rootURL = config.serverRootURL;
-
-  const handleImageUpload = async (e: { target: { files: any[]; }; }) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axios.post(`${rootURL}/actors`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   const handleSubmit = async () => {
     // TODO: make sure passwords match
@@ -84,11 +68,9 @@ export default function Signup() {
     }
 
     alert("Successfully registered!");
-    navigate("/" + username + "/home");
+    navigate("/" + username + "/actors");
 
   };
-
-
 
   return (
     <div className="w-screen h-screen flex items-center justify-center">
@@ -97,20 +79,9 @@ export default function Signup() {
           <div className="font-bold flex w-full justify-center text-2xl mb-4">
             Sign Up to Pennstagram
           </div>
-          {/* <div className="flex space-x-4 items-center justify-between">
-            <label htmlFor="uploadedImage" className="font-semibold">
-              Upload Selfie
-            </label>
-            <input
-              id="uploadedImage"
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e.target.files[0])} // Call handleImageChange on file selection
-            />
-          </div> */}
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="username" className="font-semibold">
-              Username
+              Username (required)
             </label>
             <input
               id="username"
@@ -182,7 +153,7 @@ export default function Signup() {
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="email" className="font-semibold">
-              Email
+              Email (required)
             </label>
             <input
               id="email"
@@ -194,7 +165,7 @@ export default function Signup() {
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="password" className="font-semibold">
-              Password
+              Password (required)
             </label>
             <input
               id="password"
@@ -206,7 +177,7 @@ export default function Signup() {
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="confirmPassword" className="font-semibold">
-              Confirm Password
+              Confirm Password (required)
             </label>
             <input
               id="confirmPassword"
@@ -230,3 +201,4 @@ export default function Signup() {
     </div>
   );
 }
+
