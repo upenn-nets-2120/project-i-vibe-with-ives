@@ -339,6 +339,23 @@ var getLikedByUser = async function (req, res) {
     }
 }
 
+var getComments = async function (req, res) {
+  const post_id = req.params.post_id;
+  try {
+
+  const insertQuery = `SELECT * FROM comments c LEFT JOIN users u ON u.user_id = c.author_id WHERE c.parent_post = ${post_id}`;
+    const ans = await db.send_sql(insertQuery);
+    if (ans.length == 0) {
+        res.status(500).json({ error: "Error querying database." });
+    } else {
+        res.status(201).json(ans[0].num_likes);
+    }
+
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." +err});
+  }
+}
+
 
 var routes = {
     upload_profile_photo: uploadProfilePhoto,
@@ -349,6 +366,7 @@ var routes = {
     unlike_post: unlikePost,
     get_likes: getLikes,
     get_liked_by_user: getLikedByUser,
+    get_comments: getComments
   };
   
   module.exports = routes;
