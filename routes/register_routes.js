@@ -1,6 +1,7 @@
 const routes = require("./routes.js");
 const rec_routes = require("./friend_routes.js");
 const actorRoutes = require("./actorRoutes.js");
+const profile_routes = require("./profile_routes.js")
 const feed_routes = require("./feed_routes.js");
 
 
@@ -16,7 +17,7 @@ function register_routes(app) {
   // pw
   app.post("/register", actorRoutes.post_register);
   app.get("/actors", actorRoutes.get_actors);
-  // app.post("/:username/setActor", routes.post_set_actor);
+  app.post("/:username/setActor", actorRoutes.set_actor);
 
 
   app.get("/:username/friends", routes.get_friends);
@@ -41,7 +42,7 @@ function register_routes(app) {
   app.post("/:username/removeHashtag", routes.post_remove_hashtag);
   app.post("/:username/setEmail", routes.post_set_email);
   app.post("/:username/setPassword", routes.post_set_password);
-  app.get("/getProfile", routes.get_profile);
+  app.get("/:username/getProfile", routes.get_profile);
 
   // friends requests
   app.post("/:username/requestFriend", routes.post_request_friend);
@@ -59,6 +60,10 @@ function register_routes(app) {
   app.get("/:post_id/getLikes", feed_routes.get_likes);
   app.get("/:post_id/:username/getLikedByUser", feed_routes.get_liked_by_user);
 
+  app.get("/:post_id/getComments", feed_routes.get_comments);
 
+  app.post("/:username/createComment", feed_routes.create_comment);
+  app.get("/:post_id/getComments", feed_routes.get_comments);
+  app.get("/:post_id/getHashtags", feed_routes.get_hashtags);
 
 }

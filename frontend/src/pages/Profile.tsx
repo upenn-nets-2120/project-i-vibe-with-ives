@@ -4,6 +4,8 @@ import axios from 'axios';
 import config from '../../config.json';
 import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 
+axios.defaults.withCredentials = true;
+
 export default function Profile() {
     const { username } = useParams();
     const rootURL = config.serverRootURL;

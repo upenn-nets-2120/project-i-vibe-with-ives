@@ -27,7 +27,7 @@ const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 const e = require("cors");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
-const {S3Client, GetObjectCommand, PutObjectCommand} = require("@aws-sdk/client-s3");
+const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs').promises;
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
@@ -38,6 +38,33 @@ const db = dbsingleton;
 
 const PORT = config.serverPort;
 
+async function getS3Object(bucket, objectKey) {
+
+  const credentials = fromIni({
+    accessKeyId: "ASIA3I76JENOQ2FJKFKW",
+    secretAccessKey: "Df7BnMSAz60fhtdejs/ae8s0gzNr5rhrM2Q0xrZd",
+    sessionToken: "IQoJb3JpZ2luX2VjEAYaCXVzLXdlc3QtMiJHMEUCIC3CG6ZBYyI+Qf0GhA7wZvX37r1rHZCzhZTexoh9FqocAiEA0Ak6qnhPVxBiVjpRFcDKAOLvU8wngtkg6iQOX7pciMMqnQIITxABGgw3NzUyMzgwMDE1MDEiDB0l+sGMmYk/wOYOnyr6ARN//ILJmJoS0iV4AVlQ98YgonURpwTFv6+oQHMLq7UYPClD9ws9VFHeI9rdixjOCtpWMKe4pgoDm3Kwaf47iAclxutDzTfmTDmG0dSI+s+4CT1AANM10KCKWUjjxO/oQZ2BbKrndy3Ui1tduQOkqgHAPVYabCBSyHbOdDHY518inwlWcPfk5ViwjXmX4ORXqMGCcuPa1Gl43SSolDB84bhxyim26tdNdtp8dUxnFl24hk963BbFF9XKHAlYKNbgOoQlrh+6ibXLDATAauTMDiZP9LtIh47B+iJW+xeKI8PR/WhIF0LNBnkS2b1uorrk9QG0LG6U9h8QAoQwkoeWsQY6nQEPJOB36yLtUnLicbE+nyI+xbH4N5ASNKRck+erX366GuSevtyGJSLwr3OnIY/H6myjoQDO+W5v510EtJPQeJ0tNtQj5v1p+59Mq8XjjtvERPUWY7GLmF3Kbq4Jb4Gn2t1lLO+HOibnTDyZDcJDc6egoZRb6szqkyJxKEPu64eA0cqwaauWeonXoOYuLLGVAxZQ4hMmJBsI82T38YPd"
+  });
+  const s3Client = new S3Client({ region: "us-east-1", credentials: credentials });
+
+  // Create the parameters for the GetObjectCommand
+  const getObjectParams = {
+    Bucket: bucket,
+    Key: objectKey,
+  };
+
+  // Create a new instance of the GetObjectCommand with the parameters
+  const command = new GetObjectCommand(getObjectParams);
+
+  try {
+    // Use the S3 client to send the command
+    const data = await s3Client.send(command);
+    return data.Body;
+  } catch (error) {
+    console.error("Error fetching object from S3:", error);
+    throw error; // Rethrow or handle as needed
+  }
+}
 
 
 var vectorStore = null;
@@ -55,7 +82,43 @@ var getVectorStore = async function (req) {
   }
   return vectorStore;
 };
+async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
+  try {
+    // Read the image file from local filesystem
+    const fileContent = await fs.readFile(filePath);
 
+    // Create an instance of the S3 client
+    const credentials = fromIni({
+      accessKeyId: "ASIA3I76JENOQ2FJKFKW",
+      secretAccessKey: "Df7BnMSAz60fhtdejs/ae8s0gzNr5rhrM2Q0xrZd",
+      sessionToken: "IQoJb3JpZ2luX2VjEAYaCXVzLXdlc3QtMiJHMEUCIC3CG6ZBYyI+Qf0GhA7wZvX37r1rHZCzhZTexoh9FqocAiEA0Ak6qnhPVxBiVjpRFcDKAOLvU8wngtkg6iQOX7pciMMqnQIITxABGgw3NzUyMzgwMDE1MDEiDB0l+sGMmYk/wOYOnyr6ARN//ILJmJoS0iV4AVlQ98YgonURpwTFv6+oQHMLq7UYPClD9ws9VFHeI9rdixjOCtpWMKe4pgoDm3Kwaf47iAclxutDzTfmTDmG0dSI+s+4CT1AANM10KCKWUjjxO/oQZ2BbKrndy3Ui1tduQOkqgHAPVYabCBSyHbOdDHY518inwlWcPfk5ViwjXmX4ORXqMGCcuPa1Gl43SSolDB84bhxyim26tdNdtp8dUxnFl24hk963BbFF9XKHAlYKNbgOoQlrh+6ibXLDATAauTMDiZP9LtIh47B+iJW+xeKI8PR/WhIF0LNBnkS2b1uorrk9QG0LG6U9h8QAoQwkoeWsQY6nQEPJOB36yLtUnLicbE+nyI+xbH4N5ASNKRck+erX366GuSevtyGJSLwr3OnIY/H6myjoQDO+W5v510EtJPQeJ0tNtQj5v1p+59Mq8XjjtvERPUWY7GLmF3Kbq4Jb4Gn2t1lLO+HOibnTDyZDcJDc6egoZRb6szqkyJxKEPu64eA0cqwaauWeonXoOYuLLGVAxZQ4hMmJBsI82T38YPd"
+    });
+    const s3Client = new S3Client({ region: "us-east-1", credentials: credentials });
+
+    // Create the PutObject command with necessary parameters
+    const putObjectParams = {
+      Bucket: s3Bucket,
+      Key: s3Key,
+      Body: fileContent,
+      ContentType: 'image/jpeg' // Set the content type as image/jpeg or as appropriate
+    };
+
+    // Execute the PutObject command
+    const data = await s3Client.send(new PutObjectCommand(putObjectParams));
+    console.log("Image upload successful", data);
+  } catch (err) {
+    // Handle errors
+    console.error("Error during file upload:", err);
+    throw err;
+  }
+}
+
+var uploadPhoto = async function (req, res) {
+  const imgName = req.body.imgName;
+  uploadImageFileToS3(imgURL, "pennstagram-pics-i-vibe-with-ives", req.params.username)
+    .then(() => res.status(201).json({ message: "Upload successful!" }))
+    .catch((error) => res.status(400).json({ message: "Upload failed:" }))
+}
 
 // POST /login
 var postLogin = async function (req, res) {
@@ -98,6 +161,7 @@ var postLogin = async function (req, res) {
     }
   } catch (err) {
     console.log(err);
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -124,10 +188,10 @@ var getFriends = async function (req, res) {
   const username = req.params.username;
   // req.session.username = username;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `SELECT u2.username AS friend_username
   FROM users u1
@@ -349,29 +413,30 @@ var create_chat = async function (req, res) {
 };
 
 var post_send_message = async function (req, res) {
+  console.log("SEND MESSAGE");
   const username = req.params.username;
   const message = req.body.message;
   const chat_name = req.body.chat_name;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   console.log("not logged in");
+  //   return;
+  // }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
   if (result.length == 0) {
+    console.log("no user");
     res.status(500).json({ error: "Error querying database." });
     return;
   }
   const user_id = result[0].user_id;
-  console.log("USERID");
-  console.log(user_id);
   const search3 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
   const result3 = await db.send_sql(search3);
-  console.log(result3);
 
   if (result3.length == 0) {
+    console.log("no chat");
     res.status(404).json({ error: "Chat not found." });
     return;
   }
@@ -382,6 +447,7 @@ var post_send_message = async function (req, res) {
   const search2 = `SELECT * FROM group_members WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
   const result2 = await db.send_sql(search2);
   if (result2.length == 0) {
+    console.log("not in chat");
     res.status(403).json({ error: "User is not in chat." });
     return;
   }
@@ -392,43 +458,61 @@ var post_send_message = async function (req, res) {
     res.status(201).json({ message: "Message sent." });
     return;
   } else {
+    console.log("error");
     res.status(500).json({ error: "Error querying database." });
     return;
   }
 };
 var get_chats = async function (req, res) {
   // TODO: get all chats of current user
-  const username = req.body.username;
+  console.log("GET CHATS");
+  const username = req.query.username;
+  console.log(username);
+  console.log(req.session.username);
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   console.log("not logged in");
+  //   return;
+  // }
 
-  const search = `SELECT group_name FROM group_members JOIN \`groups\` ON group_members.group_id = \`groups\`.group_id JOIN users ON group_members.user_id = users.user_id WHERE users.username = '${username}';`;
+  const search = `
+    SELECT \`groups\`.group_id, \`groups\`.group_name
+    FROM group_members
+    JOIN \`groups\` ON group_members.group_id = \`groups\`.group_id
+    JOIN users ON group_members.user_id = users.user_id
+    WHERE users.username = '${username}';
+`;
   try {
     const result = await db.send_sql(search);
     const formattedData = {
       results: result.map((item) => ({
-        group_name: item.group_name,
+        name: item.group_name,
+        id: item.group_id,
       })),
     };
-
+    console.log(formattedData)
     res.status(200).json(formattedData);
+    return;
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
 };
 
-var get_messages = async function (req, res) {
-  const username = req.body.username;
-  const chat_name = req.body.chat_name;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+var get_messages = async function (req, res) {
+  console.log("GET MESSAGES");
+  const username = req.query.username;
+  const chat_name = req.query.chat_name;
+
+  console.log(username);
+  console.log(chat_name);
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `
     SELECT u.username, m.message, m.timestamp
@@ -440,6 +524,7 @@ var get_messages = async function (req, res) {
   `;
   try {
     const result = await db.send_sql(search);
+    console.log(result);
     const formattedData = {
       results: result.map((item) => ({
         username: item.username,
@@ -451,8 +536,10 @@ var get_messages = async function (req, res) {
     formattedData.results.sort((a, b) => {
       return a.timestamp - b.timestamp;
     });
+    console.log(formattedData);
     res.status(200).json(formattedData);
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -732,7 +819,7 @@ var post_set_password = async function (req, res) {
 };
 
 var get_profile = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
 
   const search = `SELECT * FROM users WHERE username = '${username}';`;
 
