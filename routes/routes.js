@@ -26,6 +26,10 @@ const config = require("../config.json"); // Load configuration
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
 
+
+// import { ChatOpenAI, PromptTemplate, StringOutputParser } from "@langchain/openai";
+// import { createRetrievalChain, createStuffDocumentsChain } from "langchain/chains";
+
 // Database connection setup
 const db = dbsingleton;
 
@@ -58,8 +62,6 @@ var postRegister = async function (req, res) {
   console.log(username);
   console.log(password);
   console.log(linked_nconst);
-
-
 
   // throw 400 error if any of username, password, lnked_id is empty
   if (!username || !password || !linked_nconst) {
@@ -106,6 +108,7 @@ var postRegister = async function (req, res) {
       });
     }
   } catch (err) {
+    console.log("HI");
     console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
@@ -130,6 +133,7 @@ var postLogin = async function (req, res) {
   console.log(search);
 
   try {
+    console.log("first");
     const result = await db.send_sql(search);
     console.log(result);
     if (result.length == 0) {
@@ -155,6 +159,7 @@ var postLogin = async function (req, res) {
 
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
@@ -914,40 +919,49 @@ var get_profile = async function (req, res) {
   res.status(200).json({result: user});
 }
 
-var getMovie = async function (req, res) {
-  const vs = await getVectorStore();
-  const retriever = vs.asRetriever();
+// var getMovie = async function (req, res) {
+//   // const vs = await getVectorStore();
+//   // const retriever = vs.asRetriever();
 
-  const username = req.params.username;
-  req.session.username = username;
+//   // const username = req.params.username;
+//   // req.session.username = username;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+//   // if (helper.isLoggedIn(req, username) == false) {
+//   //   res.status(403).json({ error: "Not logged in." });
+//   //   return;
+//   // }
 
-  const prompt = PromptTemplate.fromTemplate(`${req.body.question}`);
-  const llm = new ChatOpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    model: "gpt-3.5-turbo",
-  });
+//   const search = `SELECT caption FROM posts`;
 
-  const ragChain = RunnableSequence.from([
-    {
-      context: retriever.pipe(formatDocumentsAsString),
-      question: new RunnablePassthrough(),
-    },
-    prompt,
-    llm,
-    new StringOutputParser(),
-  ]);
+//   const result = await db.send_sql(search);
 
-  console.log(req.body.question);
+//   const documents = result.map((item) => new Document(item.caption));
 
-  result = await ragChain.invoke(req.body.question);
-  console.log(result);
-  res.status(200).json({ message: result });
-};
+//   const embeddings = new OpenAIEmbeddings({
+//     apiKey: process.env.OPENAI_API_KEY,
+//     batchSize: 512,
+//     model: "text-embedding-3-small"
+//   });
+
+//   const combineDocsChain = createStuffDocumentsChain({
+//     retriever: embeddings,
+//     documents: documents,
+//   });
+
+
+//   const retriever = createRetrievalChain({
+//     retriever: embeddings,
+//     documents: documents,
+//     query: "movie",
+//     k: 5,
+//   });
+
+//   const results = await retriever.run();
+
+//   res.status(200).json({ results: results });
+// };
+
+
 
 
 
@@ -963,7 +977,6 @@ var routes = {
   post_logout: postLogout,
   get_friends: getFriends,
   get_friend_recs: getFriendRecs,
-  get_movie: getMovie,
   create_post: createPost,
   get_feed: getFeed,
   post_create_chat: create_chat,

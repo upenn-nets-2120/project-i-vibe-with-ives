@@ -1,4 +1,5 @@
 const routes = require("./routes.js");
+const routes2 = require("./search_routes.js");
 
 module.exports = {
   register_routes,
@@ -15,7 +16,7 @@ function register_routes(app) {
   app.get("/:username/feed", routes.get_feed);
   // TODO: register getMovie, which does not need a :username
   //       Make it compatible with the call from ChatInterface.tsx
-  app.post("/:username/movies", routes.get_movie);
+  app.post("/:username/movies", routes2.get_movie);
 
   // chat routes
   app.get("/:username/chats", routes.get_chats);
@@ -39,5 +40,8 @@ function register_routes(app) {
   app.post("/:username/acceptFriend", routes.post_accept_friend);
   app.post("/:username/removeFriend", routes.post_remove_friend);
 
-  // todo: 
+  // search routes
+  app.get("/search/posts", routes2.get_similar_posts);
+  app.get("/search/people", routes2.get_similar_people);
+
 }
