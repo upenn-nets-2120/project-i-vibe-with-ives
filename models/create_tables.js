@@ -1,8 +1,6 @@
 const dbaccess = require("./db_access");
 const config = require("../config.json"); // Load configuration
 
-
-
 async function create_tables(db) {
   // TODO: define the names table (or use previous one)?.
   // var qa = db.create_tables('...');
@@ -26,6 +24,7 @@ async function create_tables(db) {
       affiliation VARCHAR(255), \
       linked_nconst VARCHAR(10), \
       birthday DATE, \
+      email VARCHAR(255), \
       selfie VARCHAR(255), \
       FOREIGN KEY (linked_nconst) REFERENCES names(nconst) \
       );"
