@@ -22,7 +22,7 @@ const Actor: React.FC = () => {
     const [actorOptions, setActorOptions] = useState<Actor[]>([]);
     const rootURL = config.serverRootURL;
     const { username } = useParams();
-
+    const navigate = useNavigate();
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -50,6 +50,7 @@ const Actor: React.FC = () => {
             await axios.post(`${rootURL}/` + username + `/setActor`, { actor: actor.linked_nconst });
             console.log(`Actor ${actor.linked_nconst} set successfully.`);
             setShowActorPopup(false);
+            navigate("/" + username + "/home");
         } catch (error) {
             console.error("Error setting actor:", error);
         }
