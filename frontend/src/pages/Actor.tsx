@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
 import config from "../../config.json";
+import { useParams, useNavigate } from "react-router-dom";
 
 axios.defaults.withCredentials = true;
 
 interface Actor {
-    id: string;
-    name: string;
+    linked_nconst: string;
+    img: string;
 }
 
 interface ActorPopupProps {
@@ -20,6 +21,7 @@ const Actor: React.FC = () => {
     const [showActorPopup, setShowActorPopup] = useState(false);
     const [actorOptions, setActorOptions] = useState<Actor[]>([]);
     const rootURL = config.serverRootURL;
+    const { username } = useParams();
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -29,7 +31,7 @@ const Actor: React.FC = () => {
             formData.append("file", file);
 
             try {
-                const response = await axios.post(`${rootURL}/actors`, formData, {
+                const response = await axios.post(`${rootURL}/${username}/actors`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },
@@ -45,8 +47,8 @@ const Actor: React.FC = () => {
 
     const handleSelectActor = async (actor: Actor) => {
         try {
-            await axios.post(`${rootURL}/set_actor`, { actorId: actor.id });
-            console.log(`Actor ${actor.name} set successfully.`);
+            await axios.post(`${rootURL}/` + username + `/setActor`, { actor: actor.linked_nconst });
+            console.log(`Actor ${actor.linked_nconst} set successfully.`);
             setShowActorPopup(false);
         } catch (error) {
             console.error("Error setting actor:", error);
@@ -76,10 +78,10 @@ const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) =
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-4 rounded-lg">
                 <h3 className="text-lg font-bold">Select an Actor</h3>
-                <ul>
+                <ul style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
                     {options.map((actor) => (
-                        <li key={actor.id} className="p-2 cursor-pointer hover:bg-gray-100" onClick={() => onSelect(actor)}>
-                            {actor.name}
+                        <li key={actor.linked_nconst} className="p-2 cursor-pointer hover:bg-gray-100" onClick={() => onSelect(actor)}>
+                            <img src={`http://localhost:8080/images/${actor.img}`} alt={`Actor ${actor.linked_nconst}`} style={{ width: '100px', height: '150px', objectFit: 'cover' }} />
                         </li>
                     ))}
                 </ul>
