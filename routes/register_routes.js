@@ -3,6 +3,10 @@ const rec_routes = require("./friend_routes.js");
 const actorRoutes = require("./actorRoutes.js");
 const profile_routes = require("./profile_routes.js")
 const feed_routes = require("./feed_routes.js");
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const express = require('express');
+const path = require('path');
 
 const notifs_routes = require("./notifs_routes.js")
 const search_routes = require("./search_routes.js");
@@ -11,13 +15,16 @@ module.exports = {
 };
 // https://docs.google.com/document/d/1JgVi5vEvT5Pohz-mpo9U3bhsrNRideIpvq0p8zMU8os/edit
 function register_routes(app) {
+  app.use('/images', express.static(path.join(__dirname, '../basic-face-match/images')));
+
+
   app.get("/hello", routes.get_helloworld);
   app.post("/login", routes.post_login);
   app.get("/logout", routes.post_logout);
 
   // pw
   app.post("/register", actorRoutes.post_register);
-  app.get("/actors", actorRoutes.get_actors);
+  app.post("/:username/actors", upload.single('file'), actorRoutes.get_actors);
   app.post("/:username/setActor", actorRoutes.set_actor);
 
 
