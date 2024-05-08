@@ -87,7 +87,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
      * @param filePath
      * @return JavaPairRDD: (followed: String, follower: String)
      */
-    protected JavaPairRDD<String, String> getSocialNetwork(String filePath) {
+    protected JavaPairRDD<String, String> getSocialNetwork() {
         try {
             logger.info("Connecting to database...");
             Connection connection = null;
@@ -143,6 +143,34 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     }
 
     /**
+     * Friend-of-a-Friend Recommendation Algorithm
+     *
+     * @param network JavaPairRDD: (followed: String, follower: String) The social network
+     * @return JavaPairRDD: ((person, recommendation), strength) The friend-of-a-friend recommendations
+     */
+    private JavaPairRDD<Tuple2<String, String>, Integer> friendOfAFriendRecommendations(
+            JavaPairRDD<String, String> network) {
+        // TODO: Generate friend-of-a-friend recommendations by computing the set of 2nd-degree followed users. This
+        //  method should do the same thing as the `friendOfAFriendRecommendations` method in the
+        //  `FriendsOfFriendsStreams` class, but using Spark's RDDs instead of Java Streams.
+
+        JavaPairRDD<String, String> reversed = network.mapToPair(Tuple2::swap);
+        JavaPairRDD<String, Tuple2<String, String>> merged = network.join(reversed);
+        
+        JavaPairRDD<String, String> filtered = merged.filter(pair -> !pair._2()._1().equals(pair._2()._2()))
+                                                      .mapToPair(pair -> new Tuple2<>(pair._2()._1(), pair._2()._2()));
+        
+        //filter out first degree connections
+        filtered = filtered.subtract(reversed);
+        
+        JavaPairRDD<Tuple2<String, String>, Integer> finalRDD = filtered.mapToPair(pair -> new Tuple2<>(pair, 1))
+                                                                       .reduceByKey(Integer::sum);
+    
+        return finalRDD;
+    
+    }
+
+    /**
      * Main functionality in the program: read and process the social network
      * Runs the SocialRank algorithm to compute the ranks of nodes in a social network.
      *
@@ -154,7 +182,9 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     public List<Tuple2<String, Double>> run(boolean debug) throws IOException, InterruptedException {
 
         // Load the social network, aka. the edges (followed, follower)
-        JavaPairRDD<String, String> edgeRDD = getSocialNetwork(Config.SOCIAL_NET_PATH);
+        JavaPairRDD<String, String> edgeRDD = getSocialNetwork();
+
+
 
         // Find the sinks in edgeRDD as PairRDD
         JavaRDD<String> sinks = getSinks(edgeRDD);
@@ -224,13 +254,13 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         //Output the top 1000 node IDs with the highest SocialRank values, as well as the SocialRank value of each. The output should consist of 1000 lines of the form x y, where x is a node ID and y is the socialRank of x; the lines should be ordered by SocialRank in descending order.
         List<Tuple2<String, Double>> finalIdRanks = ranks.mapToPair(Tuple2::swap).sortByKey(false).mapToPair(Tuple2::swap).take(ranks.collect().size());
 
-        sendResultsToDatabase(finalIdRanks);
+        sendRankResultsToDatabase(finalIdRanks);
 
         return finalIdRanks;
 
     }
 
-    public void sendResultsToDatabase(List<Tuple2<String, Double>> recommendations) {
+    public void sendRankResultsToDatabase(List<Tuple2<String, Double>> recommendations) {
 
         String insertQuery = "INSERT INTO social_rank (user_id, social_rank) VALUES (?, ?)";
 
@@ -238,9 +268,13 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 Config.DATABASE_PASSWORD)) {
 
 
-            // create recommendations_2 table if it doesn't exist
             try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE social_rank (user_id INT, social_rank FLOAT, FOREIGN KEY (user_id) REFERENCES users(user_id));");
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS social_rank (user_id INT, social_rank FLOAT, FOREIGN KEY (user_id) REFERENCES users(user_id));");
+            }
+
+            // delete from social rank
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate("DELETE FROM social_rank;");
             }
 
             // TODO: Write your recommendations data back to imdbdatabase.
@@ -264,6 +298,76 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         }
     }
 
+    /**
+     * Send friend of a friend recommendations results back to the database
+     *
+     * @param recommendations List: (followed: String, follower: String)
+     *                        The list of recommendations to send back to the database
+     */
+    public void sendFoafResultsToDatabase(List<Tuple2<Tuple2<String, String>, Integer>> recommendations) {
+
+        String insertQuery = "INSERT INTO recommendations (user_id, recommendation, strength) VALUES (?, ?, ?)";
+
+        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME,
+                Config.DATABASE_PASSWORD)) {
+
+            // create recommendations_2 table if it doesn't exist
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS recommendations (user_id INT, recommendation INT, strength INT, FOREIGN KEY (user_id) REFERENCES users(user_id), FOREIGN KEY (recommendation) REFERENCES users(user_id));");
+            }
+
+            // clear old friend recommendations
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate("DELETE FROM recommendations;");
+            }
+
+            // TODO: Write your recommendations data back to imdbdatabase.
+            try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+            // Iterate over recommendations and insert each one into the database
+                for (Tuple2<Tuple2<String, String>, Integer> recommendation : recommendations) {
+                    String followed = recommendation._1()._1();
+                    String follower = recommendation._1()._2();
+                    int strength = recommendation._2();
+
+                    // Set parameters for the prepared statement
+                    preparedStatement.setString(1, followed);
+                    preparedStatement.setString(2, follower);
+                    preparedStatement.setInt(3, strength);
+
+                    // Execute the INSERT statement
+                    preparedStatement.executeUpdate();
+                }
+            }
+            // connection.commit();
+        } catch (SQLException e) {
+            logger.error("Error sending recommendations to database: " + e.getMessage(), e);
+        }
+    }
+
+    public void runFoaf() throws IOException, InterruptedException {
+        logger.info("Running");
+
+        // Load the social network:
+        // Format of JavaPairRDD = (followed, follower)
+        JavaPairRDD<String, String> network = getSocialNetwork();
+
+        // Friend-of-a-Friend Recommendation Algorithm:
+        // Format of JavaPairRDD = ((person, recommendation), strength)
+        JavaPairRDD<Tuple2<String, String>, Integer> recommendations = friendOfAFriendRecommendations(network);
+
+        // Collect results and send results back to database:
+        // Format of List = ((person, recommendation), strength)
+        if (recommendations == null) {
+            logger.error("Recommendations are null");
+            return;
+        }
+        List<Tuple2<Tuple2<String, String>, Integer>> collectedRecommendations = recommendations.collect();
+        // writeResultsCsv(collectedRecommendations);
+        sendFoafResultsToDatabase(collectedRecommendations);
+
+        logger.info("*** Finished friend of friend recommendations! ***");
+    }
+
 
     /**
      * Graceful shutdown
@@ -277,16 +381,21 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     }
 
     public static void main(String[] args) {
-        final ComputeRanks cr = new ComputeRanks(0.01, 10, 1000, true);
+        final ComputeRanks friendRecs = new ComputeRanks(0.01, 10, 1000, true);
         try {
-            cr.initialize();
-            cr.run(true);
+            while (true) {
+                friendRecs.initialize();
+                friendRecs.runFoaf();
+                friendRecs.run(true);
+                Thread.sleep(86400000);
+            }
+            
         } catch (final IOException ie) {
             logger.error("IO error occurred: " + ie.getMessage(), ie);
         } catch (final InterruptedException e) {
             logger.error("Interrupted: " + e.getMessage(), e);
         } finally {
-            cr.shutdown();
+            friendRecs.shutdown();
         }
     }
 
