@@ -217,13 +217,13 @@ var getFriends = async function (req, res) {
 };
 
 var post_request_friend = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
   const friend = req.body.friend;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);

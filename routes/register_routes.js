@@ -79,6 +79,8 @@ function register_routes(app) {
   app.get("/:post_id/getPostById", profile_routes.get_id_post);
   app.get("/:loggedIn/hasRequested/:username", profile_routes.are_friends_req);
   app.get("/:loggedIn/isFriendsWith/:username", profile_routes.are_friends);
+  app.post("/getLinkedActor", profile_routes.getLinkedActor);
+
 
 
 

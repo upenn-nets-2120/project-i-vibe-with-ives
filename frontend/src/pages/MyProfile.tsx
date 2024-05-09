@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 // import "./App.css";
 import "./Profile.css";
-import ListPopup from "./ListPopup";
 import PostProfileHandler from "./PostProfileHandler";
+import ListPopup from "./ListPopup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import config from '../../config.json';
@@ -27,7 +27,7 @@ export interface Profile {
 
 export interface Post {
   post_id: number;
-  parent_post: number | null;
+  // parent_post: number | null;
   caption: string | null;
   author_id: number;
   image: string | null;
@@ -52,23 +52,25 @@ const MyProfile = () => {
     selfie: null,
   });
   const [posts, setPosts] = useState<Post[]>([
-    {
-      post_id: 2,
-      parent_post: null,
-      caption: "dummy 1",
-      author_id: 5,
-      image: null,
-      num_likes: null,
-    },
-    {
-      post_id: 3,
-      parent_post: null,
-      caption: "dummy 2",
-      author_id: 5,
-      image: null,
-      num_likes: null,
-    },
+    // {
+    //   post_id: 2,
+    //   // parent_post: null,
+    //   caption: "dummy 1",
+    //   author_id: 5,
+    //   image: null,
+    //   num_likes: null,
+    // },
+    // {
+    //   post_id: 3,
+    //   // parent_post: null,
+    //   caption: "dummy 2",
+    //   author_id: 5,
+    //   image: null,
+    //   num_likes: null,
+    // },
   ]);
+
+  const [actor, setActor] = useState<string>(""); 
 
   const fetchData = async () => {
     const response = await axios.get(
@@ -76,10 +78,21 @@ const MyProfile = () => {
     );
     setProfile(response.data.result);
 
-    const response2 = await axios.get(
-      `${rootURL}/${username}/getPosts`
-    );
-    setPosts(response2.data.result);
+    try {
+      const response2 = await axios.get(
+        `${rootURL}/${username}/getPosts`
+      );
+      setPosts(response2.data.result);
+    } catch {
+      console.error("Error fetching posts");
+    }
+    
+
+    const response3 = await axios.post(
+      `${rootURL}/getLinkedActor`, { linked_nconst: profile.linked_nconst }
+    )
+
+    setActor(response3.data.actor);
   };
 
   useEffect(() => {
@@ -100,9 +113,11 @@ const MyProfile = () => {
   };
 
   return (
+    
     <div className="w-screen h-screen flex">
-      <Sidebar /> {/* Use the Sidebar component */}
+      <Sidebar />
       <div className="profile-container">
+        <div className="content">
         <div className="profile-top">
           <div className="profile-picture">
             <img
@@ -111,10 +126,9 @@ const MyProfile = () => {
             />
           </div>
           <div className="profile-info">
-            <h2>@ {profile.username}</h2>
+            <h2>@{profile.username}</h2>
             <p>
-              {profile.first_name} {profile.last_name} is now linked to
-              {profile.affiliation}
+              {profile.first_name} {profile.last_name} is now linked to {actor}!
             </p>
             <div className="profile-buttons">
               <button onClick={toggleFriends} className="btn btn-success">
@@ -135,6 +149,7 @@ const MyProfile = () => {
         </div>
         <div>
           <PostProfileHandler posts={posts} />
+        </div>
         </div>
       </div>
     </div>
