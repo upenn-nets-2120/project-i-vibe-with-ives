@@ -45,7 +45,7 @@ function FriendRecsComponent() {
   }, [username]);
 
   return (
-    <div className='w-screen h-screen flex flex-col items-center justify-center'>
+    <div className=''>
       <div className='bg-slate-50 p-6 rounded-md'>
       <h1 className='text-2xl font-bold mb-4'>Friend Recommendations for {username}</h1>
         {recommendations.length > 0 ? (

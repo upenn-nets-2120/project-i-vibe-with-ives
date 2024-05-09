@@ -207,10 +207,10 @@ var getFeed = async function (req, res) {
   const username = req.params.username;
   // req.session.username = username;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   // get user_id of user with username username
   const initSearch = `SELECT user_id FROM users WHERE username = '${username}';`;
@@ -236,27 +236,64 @@ var getFeed = async function (req, res) {
   //     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
 
   const search = `SELECT DISTINCT p.post_id, p.caption, p.time, p.author_id, u.username, p.image FROM posts p LEFT JOIN users u ON p.author_id = u.user_id ORDER BY p.time DESC;`
+
+  const tweetSearch =  `SELECT DISTINCT id as post_id, text as caption, created_at as time, author_id FROM tweets ORDER BY created_at DESC;`
   try {
     const result = await db.send_sql(search);
-    const formattedData = {
-      results: result.map((item) => ({
+    const tweetResult = await db.send_sql(tweetSearch);
+
+    function formatItem(item) {
+      return {
         post_id: item.post_id,
         caption: item.caption,
         time: item.time,
         author_id: item.author_id,
-        username: item.username,
-        image: item.image
-      })),
+        username: item.username ? item.username : "twitter_user",
+        image: item.image ? item.image : null
+      };
+    }
+
+    
+    
+    // Map both results and tweet results to the formatted structure
+    const formattedResult = result.map(formatItem);
+    const formattedTweetResult = tweetResult.map(formatItem);
+    
+    // Combine both arrays into one
+    const formattedData = {
+      results: [...formattedResult, ...formattedTweetResult]
     };
+  
+    
     res.status(200).json(formattedData);
     return;
 
   } catch (err) {
-    console.log(results);
     console.log("third");
     res.status(500).json({ error: "Error querying database." + err });
     return;
   }
+
+  /* 
+  
+    quoted_tweet_id: null,
+    hashtags: [],
+    created_at: 1715196063000,
+    replied_to_tweet_id: null,
+    quotes: 1,
+    urls: 'https://ew.com/steve-albini-dead-producer-nirvana-pixies-90s-rock-8645467?taid=663bd09e2692da0001c0e5f3&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
+    replies: 2,
+    conversation_id: 1788288019033731300,
+    mentions: [],
+    id: 1788288019033731300,
+    text: "Steve Albini, a musician and an audio engineer for bands like Nirvana and Pixies who helped define the sound of '90s alternative rock, has died at 61. https://t.co/YUJ1cNx90s",
+    author_id: 16312576,
+    retweets: 9,
+    retweet_id: null,
+    likes: 52
+  
+  
+  */
 };
 
 
@@ -267,10 +304,10 @@ var likePost = async function (req, res) {
   // req.session.username = username;
   // req.session.user_id = 8;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   try {
     // Check if the user has already liked the post
@@ -303,10 +340,10 @@ var unlikePost = async function (req, res) {
   const username = req.params.username;
   const post_id = req.body.post_id;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   try {
     // Check if the user has already liked the post
@@ -347,6 +384,27 @@ var getLikes = async function (req, res) {
       res.status(500).json({ error: "Error querying database." });
     } else {
       res.status(201).json(ans[0].num_likes);
+      return;
+
+    }
+
+  } catch (err) {
+    res.status(500).json({ error: "Error querying database." + err });
+    return;
+
+  }
+}
+
+var getLikesTwitter = async function (req, res) {
+  const post_id = req.params.post_id;
+  try {
+
+    const insertQuery = `SELECT likes FROM tweets WHERE post_id = ${post_id}`;
+    const ans = await db.send_sql(insertQuery);
+    if (ans.length == 0) {
+      res.status(500).json({ error: "Error querying database." });
+    } else {
+      res.status(201).json(ans[0].likes);
       return;
 
     }
@@ -470,6 +528,7 @@ var routes = {
   like_post: likePost,
   unlike_post: unlikePost,
   get_likes: getLikes,
+  get_likes_twitter: getLikesTwitter,
   get_liked_by_user: getLikedByUser,
   create_comment: create_comment,
   get_comments: getComments,

@@ -67,6 +67,8 @@ function register_routes(app) {
 
   app.get("/:post_id/getLikes", feed_routes.get_likes);
   app.get("/:post_id/:username/getLikedByUser", feed_routes.get_liked_by_user);
+  app.get("/:post_id/getLikesTwitter", feed_routes.get_likes_twitter);
+
 
   app.get("/:post_id/getComments", feed_routes.get_comments);
   app.post("/:username/createComment", feed_routes.create_comment);

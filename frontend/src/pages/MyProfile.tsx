@@ -138,12 +138,12 @@ const MyProfile = () => {
                 Recommendations
               </button>
               <button className="btn btn-success" onClick={() => navigate("/" + username + "/settings")}>Edit Profile</button>
-              <ListPopup
+              {showPop && <ListPopup
                 show={showPop}
                 handleClose={toggleFriends}
                 isFriends={isFriends}
                 activeUser={username ? username : profile.username}
-              />
+              />}
             </div>
           </div>
         </div>

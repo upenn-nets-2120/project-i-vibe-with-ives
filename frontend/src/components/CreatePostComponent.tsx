@@ -2,8 +2,9 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import config from '../../config.json';
 import { useParams } from 'react-router-dom';
+import "../pages/ListPopup.css";
 
-function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
+function CreatePostComponent({ updatePosts, show, handleClose }: { updatePosts: () => void, show: boolean, handleClose: () => void}) {
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState('');
   const { username } = useParams();
@@ -36,47 +37,97 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
     }
   };
 
+  const showHideClassName = show ? "popup display-block" : "popup display-none";
+
+
   return (
-    <div className='w-screen h-screen flex justify-center'>
-      <form onSubmit={handleSubmit} className='rounded-md bg-slate-50 p-6 space-y-4 w-1/2'>
-        <h1 className='font-bold text-center text-2xl mb-4'>Create Post</h1>
-        <div className='flex flex-col space-y-2'>
-          <label htmlFor="caption" className='font-semibold'>Caption</label>
-          <textarea
-            id="caption"
-            placeholder="Caption"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            className="border border-gray-300 p-2 rounded-md"
-            rows={4}
-            required
-          />
-        </div>
-        <div className='flex flex-col space-y-2'>
-          <label htmlFor="uploadedImage" className='font-semibold'>Upload Image</label>
-          <input
-            ref={fileInputRef}
-            id="uploadedImage"
-            type="file"
-            accept="image/*"
-            required
-          />
-        </div>
-        <div className='flex flex-col space-y-2'>
-          <label htmlFor="hashtags" className='font-semibold'>Hashtags</label>
-          <input
-            id="hashtags"
-            type="text"
-            className='outline-none bg-white rounded-md border border-gray-300 p-2'
-            value={hashtags}
-            onChange={(e) => setHashtags(e.target.value)}
-          />
-        </div>
-        <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold'>Create Post</button>
-      </form>
-    </div>
-  );
+    // <div className='w-screen h-screen flex justify-center'>
+    //   <form onSubmit={handleSubmit} className='rounded-md bg-slate-50 p-6 space-y-4 w-1/2'>
+    //     <h1 className='font-bold text-center text-2xl mb-4'>Create Post</h1>
+    //     <div className='flex flex-col space-y-2'>
+    //       <label htmlFor="caption" className='font-semibold'>Caption</label>
+    //       <textarea
+    //         id="caption"
+    //         placeholder="Caption"
+    //         value={caption}
+    //         onChange={(e) => setCaption(e.target.value)}
+    //         className="border border-gray-300 p-2 rounded-md"
+    //         rows={4}
+    //         required
+    //       />
+    //     </div>
+    //     <div className='flex flex-col space-y-2'>
+    //       <label htmlFor="uploadedImage" className='font-semibold'>Upload Image</label>
+    //       <input
+    //         ref={fileInputRef}
+    //         id="uploadedImage"
+    //         type="file"
+    //         accept="image/*"
+    //         required
+    //       />
+    //     </div>
+    //     <div className='flex flex-col space-y-2'>
+    //       <label htmlFor="hashtags" className='font-semibold'>Hashtags</label>
+    //       <input
+    //         id="hashtags"
+    //         type="text"
+    //         className='outline-none bg-white rounded-md border border-gray-300 p-2'
+    //         value={hashtags}
+    //         onChange={(e) => setHashtags(e.target.value)}
+    //       />
+    //     </div>
+    //     <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold'>Create Post</button>
+    //   </form>
+    // </div>
+
+
+    <div className={showHideClassName} onClick={handleClose}>
+        <section className="popup-main" onClick={handleClose}>
+          <div className='flex flex-col space-y-2'>
+            <label htmlFor="caption" className='font-semibold' onClick={handleClose}>Caption</label>
+            <textarea
+              id="caption"
+              placeholder="Caption"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              className="border border-gray-300 p-2 rounded-md"
+              rows={4}
+              required
+            />
+          </div>
+
+          <div className='flex flex-col space-y-2'>
+            <label htmlFor="uploadedImage" className='font-semibold'>Upload Image</label>
+            <input
+              ref={fileInputRef}
+              id="uploadedImage"
+              type="file"
+              accept="image/*"
+              required
+            />
+          </div>
+    
+          <div className='flex flex-col space-y-2'>
+            <label htmlFor="hashtags" className='font-semibold'>Hashtags</label>
+            <input
+              id="hashtags"
+              type="text"
+              className='outline-none bg-white rounded-md border border-gray-300 p-2'
+              value={hashtags}
+              onChange={(e) => setHashtags(e.target.value)}
+            />
+          </div>
+    
+          <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold' onClick={handleClose}>Create Post</button>
+        </section>
+      </div>
+    );
+  
 }
+
+
+
+
 
 export default CreatePostComponent;
 
