@@ -1,0 +1,7 @@
+
+{
+    "groupId": "nets-2120-group-22",
+    "bootstrapServers": ["localhost:9092"],
+    "topic": "Twitter-Kafka",
+    "port": 3000
+}

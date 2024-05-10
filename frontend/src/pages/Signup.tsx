@@ -15,7 +15,6 @@ export default function Signup() {
   const [affiliation, setAffiliation] = useState("");
   const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
-  const [linked_nconst, setLinkedNconst] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -59,7 +58,7 @@ export default function Signup() {
 
       //axios post with body parameters
       const response = await axios.post(`${rootURL}/register`, {
-        username, password, linked_nconst, firstName, lastName, affiliation, birthday, email
+        username, password, firstName, lastName, affiliation, birthday, email
       });
 
     } catch (error) {
@@ -89,18 +88,6 @@ export default function Signup() {
               className="outline-none bg-white rounded-md border border-slate-100 p-2"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-            />
-          </div>
-          <div className="flex space-x-4 items-center justify-between">
-            <label htmlFor="linked_nconst" className="font-semibold">
-              Linked nconst
-            </label>
-            <input
-              id="linked_nconst"
-              type="text"
-              className="outline-none bg-white rounded-md border border-slate-100 p-2"
-              value={linked_nconst}
-              onChange={(e) => setLinkedNconst(e.target.value)}
             />
           </div>
           <div className="flex space-x-4 items-center justify-between">

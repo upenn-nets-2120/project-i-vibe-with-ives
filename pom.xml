@@ -312,7 +312,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>local</id>
+                        <id>friendrecs</id>
                         <goals>
                             <goal>java</goal>
                         </goals>

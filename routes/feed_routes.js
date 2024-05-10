@@ -127,10 +127,10 @@ var getProfilePhoto = async function (req, res) {
     return;
 
 
-    } catch (err) {
+  } catch (err) {
 
-        res.status(400).json({message: "Failed to get photo" + err.message});
-        return;
+    res.status(400).json({ message: "Failed to get photo" + err.message });
+    return;
 
   }
 }
@@ -205,7 +205,7 @@ var getFeed = async function (req, res) {
   // TODO: get the correct posts to show on current user's feed
   // get all posts from users that the current user follows and their own posts
   const username = req.params.username;
-  req.session.username = username;
+  // req.session.username = username;
 
   if (helper.isLoggedIn(req, username) == false) {
     res.status(403).json({ error: "Not logged in." });
@@ -438,8 +438,8 @@ var get_hashtags = async function (req, res) {
     res.status(200).json([]);
     return;
   } else {
-      res.status(200).json(answer);
-      return;
+    res.status(200).json(answer);
+    return;
   }
 }
 
@@ -454,8 +454,8 @@ var get_top_hashtags = async function (req, res) {
     res.status(200).json([]);
     return;
   } else {
-      res.status(200).json(answer);
-      return;
+    res.status(200).json(answer);
+    return;
   }
 }
 
@@ -463,18 +463,18 @@ var get_top_hashtags = async function (req, res) {
 
 
 var routes = {
-    upload_profile_photo: uploadProfilePhoto,
-    get_profile_photo: getProfilePhoto,
-    get_feed: getFeed,
-    create_post: createPost,
-    like_post: likePost,
-    unlike_post: unlikePost,
-    get_likes: getLikes,
-    get_liked_by_user: getLikedByUser,
-    create_comment: create_comment,
-    get_comments: getComments,
-    get_hashtags: get_hashtags,
-    get_top_hashtags: get_top_hashtags
-  };
-  
-  module.exports = routes;
+  upload_profile_photo: uploadProfilePhoto,
+  get_profile_photo: getProfilePhoto,
+  get_feed: getFeed,
+  create_post: createPost,
+  like_post: likePost,
+  unlike_post: unlikePost,
+  get_likes: getLikes,
+  get_liked_by_user: getLikedByUser,
+  create_comment: create_comment,
+  get_comments: getComments,
+  get_hashtags: get_hashtags,
+  get_top_hashtags: get_top_hashtags
+};
+
+module.exports = routes;

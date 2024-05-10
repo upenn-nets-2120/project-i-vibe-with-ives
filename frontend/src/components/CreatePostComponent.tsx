@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import config from '../../config.json';
 import { useParams } from 'react-router-dom';
@@ -9,17 +9,26 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
   const [hashtags, setHashtags] = useState('');  // State for hashtags
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const { username } = useParams();
+  const fileInputRef = useRef<HTMLInputElement>(null); // Ref to handle file input
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData();
+    if (fileInputRef.current?.files) {
+      formData.append('image', fileInputRef.current.files[0]);
+    }
+    formData.append('caption', caption);
+    formData.append('hashtags', hashtags);
+
     try {
-      const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, {
-        caption,
-        hashtags
-      }, { withCredentials: true });
+      const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      });
       console.log(response);
       if (response.status === 201 || response.status === 200) {
-        // Clear input fields
         setCaption('');
         setImageUrl('');  // Clear the image URL input
         setHashtags('');  // Clear the hashtags input
@@ -31,6 +40,7 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
       console.error('Error creating post:', error);
     }
   };
+
   return (
     <div className='w-screen h-screen flex justify-center'>
       <form>
@@ -78,10 +88,14 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
               onClick={handleSubmit}>Create Post</button>
           </div>
         </div>
+        <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold'>Create Post</button>
       </form>
     </div>
   );
 }
+
+export default CreatePostComponent;
+
 //   return (
 //     <div className='w-screen h-screen flex justify-center'>
 //       <form>
@@ -122,4 +136,4 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
 //   );
 // }
 
-export default CreatePostComponent;
+// export default CreatePostComponent;

@@ -53,9 +53,10 @@ const UserProfile = () => {
   // 1 for Request, 2 for Requested, 3 for Following
   const [buttonState, setButtonState] = useState<number>(1);
   const [buttonText, setButtonText] = useState<string>("Request");
+  const [actor, setActor] = useState<string>("");
 
   const fetchData = async () => {
-    const username = activeUser;
+    // const username = activeUser;
     let response = await axios.get(
       `http://localhost:8080/${activeUser}/getProfile`
     );
@@ -78,6 +79,12 @@ const UserProfile = () => {
         setButtonState(2);
       }
     }
+
+    const response3 = await axios.post(
+      `http://localhost:8080/getLinkedActor`, { linked_nconst: profile.linked_nconst }
+    )
+
+    setActor(response3.data.actor);
   };
 
   useEffect(() => {
@@ -108,6 +115,7 @@ const UserProfile = () => {
           `http://localhost:8080/${username}/requestFriend`,
           { friend: profile.username }
         );
+
       } catch (error) {
         console.error(error);
       }
@@ -118,6 +126,7 @@ const UserProfile = () => {
     <div className="w-screen h-screen flex">
       <Sidebar />
       <div className="profile-container">
+        <div className="content">
         <div className="profile-top">
           <div className="profile-picture">
             <img
@@ -128,8 +137,7 @@ const UserProfile = () => {
           <div className="profile-info">
             <h2>@ {profile.username}</h2>
             <p>
-              {profile.first_name} {profile.last_name} is now linked to
-              {profile.affiliation}
+              {profile.first_name} {profile.last_name} is now linked to {actor}!
             </p>
             <div className="profile-buttons">
               <button onClick={toggleFriends} className="btn btn-success">
@@ -149,6 +157,7 @@ const UserProfile = () => {
         </div>
         <div>
           <PostProfileHandler posts={posts} />
+        </div>
         </div>
       </div>
     </div>

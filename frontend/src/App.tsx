@@ -8,6 +8,7 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/MyProfile";
 import UserProfile from "./pages/UserProfile";
 import Signup from "./pages/Signup";
+import Actor from "./pages/Actor";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path='/:username/profile' element={<Profile />} />
         <Route path='/:username/:activeUser/userProfile' element={<UserProfile />} />
         <Route path='/:username/settings' element={<Settings />} />
+        <Route path='/:username/actors' element={<Actor />} />
       </Routes>
     </BrowserRouter>
   )

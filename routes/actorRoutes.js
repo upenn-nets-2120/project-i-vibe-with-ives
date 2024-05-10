@@ -5,11 +5,14 @@ const { ChromaClient } = require("chromadb");
 const config = require("../config.json"); // Load configuration
 const bcrypt = require("bcrypt");
 const helper = require("../routes/route_helper.js");
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 // Face Matching imports from app.js
 const { initializeFaceModels, findTopKMatches, indexAllFaces, getEmbeddings, client } = require('../basic-face-match/app');
 
 initializeFaceModels().catch(console.error);
+
 
 // Database connection setup
 const db = dbsingleton;
@@ -36,7 +39,7 @@ var postRegister = async function (req, res) {
     // console.log(linked_nconst);
 
     // throw 400 error if any of username, password, email, lnked_nconst is empty
-    if (!username || !password || !email || !linked_nconst) {
+    if (!username || !password || !email) {
         res.status(400).json({
             error:
                 "One or more of the fields you entered was empty, please try again.",
@@ -63,7 +66,7 @@ var postRegister = async function (req, res) {
                     return;
                 } else {
                     // insert into users table
-                    const insert = `INSERT INTO users (username, hashed_password, first_name, last_name, affiliation, linked_nconst, birthday, email, selfie) VALUES ('${username}', '${hash}', '${firstName}', '${lastName}', '${affiliation}', '${linked_nconst}', '${birthday}', '${email}', '${selfie}');`;
+                    const insert = `INSERT INTO users (username, hashed_password, first_name, last_name, affiliation, linked_nconst, birthday, email, selfie) VALUES ('${username}', '${hash}', '${firstName}', '${lastName}', '${affiliation}', "nm0000122", '${birthday}', '${email}', '${selfie}');`;
                     // try catch and await call
                     const result = await db.insert_items(insert);
                     if (result > 0) {
@@ -87,7 +90,14 @@ var postRegister = async function (req, res) {
 
 var getActors = async function (req, res) {
     console.log("getActors");
-    const img = req.body.img;
+
+    // Now you will access the file from req.file, as it is parsed by multer
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const img = req.file.path; // Using the path where multer saved the file
+
     try {
         const collection = await client.getOrCreateCollection({
             name: "face-api",
@@ -105,19 +115,25 @@ var getActors = async function (req, res) {
             }
 
             files.forEach(function (file, index) {
-                console.info("Adding task for " + file + " to index.");
                 promises.push(indexAllFaces(path.join("/nets2120/nets-project/basic-face-match/images", file), file, collection));
             });
-            console.info("Done adding promises, waiting for completion.");
+
             Promise.all(promises)
                 .then(async (results) => {
                     console.info("All images indexed.");
 
-                    let search = String(img);
-
-                    console.log('\nTop-k indexed matches to ' + search + ':');
-                    const matches = await findTopKMatches(collection, search, 5);
-                    res.status(200).json(matches);
+                    const matches = await findTopKMatches(collection, img, 5);
+                    const processedMatches = matches.map(match => {
+                        return match.ids[0].map(id => {
+                            const linked_nconst = id.split(".")[0]; // This assumes the id format is like "nm0002001.jpg-1"
+                            return {
+                                linked_nconst,
+                                img: id.split("-")[0] // Assuming the full path needs the original filename
+                            };
+                        });
+                    });
+                    console.log(processedMatches[0])
+                    res.status(200).json({ actors: processedMatches[0] });
                     return;
                 })
                 .catch((err) => {
@@ -152,6 +168,8 @@ var setActor = async function (req, res) {
         return;
     }
 };
+
+
 
 
 var routes = {
