@@ -14,13 +14,19 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData();
-    if (fileInputRef.current?.files) {
-      formData.append('image', fileInputRef.current.files[0]);
+    console.log("Selected filea:", uploadedImage);
+    if (uploadedImage) {
+      formData.append('image', uploadedImage);
     }
     formData.append('caption', caption);
     formData.append('hashtags', hashtags);
+    console.log(formData);
 
     try {
+      console.log("herea");
+      for (let pair of formData.entries()) {
+        console.log(pair[0]+ ', ' + pair[1]); 
+      }
       const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -68,7 +74,7 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
                 id="uploadedImage"
                 type="file"
                 accept="image/*"
-                onChange={(e) => setUploadedImage(e.target.value)}
+                onChange={(e) => setUploadedImage(e.target.files[0])}
 
                 // onChange={handleImageUpload}
             />

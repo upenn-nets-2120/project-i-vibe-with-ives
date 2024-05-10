@@ -22,6 +22,9 @@ const e = require("cors");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
 const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs').promises;
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
 // initializeFaceModels().catch(console.error);
@@ -65,12 +68,11 @@ async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
   try {
     // Read the image file from local filesystem
     const fileContent = await fs.readFile(filePath);
-
     // Create an instance of the S3 client
     const credentials = fromIni({
-      accessKeyId: "ASIA3I76JENOQT2INU2N",
-      secretAccessKey: "2Sfa5bq9zqbNVuhNt3NBVstxFdlNff8uGOvrrwYC",
-      sessionToken: "IQoJb3JpZ2luX2VjEGgaCXVzLXdlc3QtMiJHMEUCIH7b4idQ+GIKpt0nlBw2Wja7YgInOVV0I4uaVgnyrZDzAiEA4exCyOCrV3IHEah2oWZXEzYXVdShjlVW4cKTfs43e/sqpgIIwf//////////ARABGgw3NzUyMzgwMDE1MDEiDC61d2QZ+gvBX5UyHyr6AeeY9gXMaeVsKu2Ieg2EfXXWh0obdX/p7ZDnMoHLbq17VUo4xe5ofdKnu3xZnCY8zgc7gtsZFSUruXpPiL59GwApThi60CNgYJIIpOVIk3OocH6wC+OGTQfBDy+BAtFtgTqW21AFP8U0ISHEjxIpNxe4G3mu8kUxakTnvdTFgFRKDqRCoqv2y3bLLfmC8NXIXw/0Z6TLeJJq105iXPNlgHG3kQG9bHIsF7Zki7eIk2ojfMhIWeYy3Vq9aFPIy/9dDkuxfwCs41F3JCajFuKPYH0Nf1SRAIP+oYk+el3EeLpgOPoUqeHXiiYI8OTGmIYCoGXUqJE6/FdvgJEwpPzjsQY6nQHYY8S7yzQnsojsvjMc6z2NEkus555qCBg2tHi+L/UKsuid3m4C81TC+XH/uPIfvwQMBDrV9+T/qPhSXDonKaV2CVkBLFyH+gUuMgSH6rvi0PIiT7sL0KapEI0JmxYiXaddqMw3dAPqn/VRnxpYOJ0O9Om1x0Xsfc4Fq6Y0MT9ftyQZSihLdsy/anvbGRQ6HmjsSdQf82VXFoYajpKK"
+      accessKeyId: "ASIA3I76JENOZV4OABW6",
+      secretAccessKey: "+vs6zMifCVQIhSFvRemTZ7ZEla2wzpMoyjfhKR7k",
+      sessionToken: "IQoJb3JpZ2luX2VjEMr//////////wEaCXVzLXdlc3QtMiJIMEYCIQCazM1lC6iAm8EFChwK8wbw+d+RUyrD8kHIbQ3vmlpPpQIhAPIBQTmC5hfNjw/KFJTPxyZn1xn1e79x+KFuwdCRthyLKp0CCDMQARoMNzc1MjM4MDAxNTAxIgwUFyf30JEZftGMEdgq+gHdSCHv2xTF5c3v1HHPXQDDxv02ClkN4y0D49t94Sc9kHV8B2UjSc9lA+1y0FnzSu8Oc/vjrrMyHAvfc5g0v49152XUBN8CIyxMGVw41eZXnlrOhRc5GimgBbTlQADztJXnMUfM6v8UX/AftdGFDmBnmZthJCcjTFEkD24n5es13KEHu4Fm9Zur99VPaQzDDVOh6VWGqAtw/Xrr2nUZf/vROeC/ANb6R9tkvI3HiexqXwPl5qmYPYagatwhUr2gHRuMfcmjaJev0OBa2DQFY8u4WT01Z6rgfVYIL7e59z+fvJoIc4DOLQRdli1CPsovz7zFzMAY4lK9X2RBMKGw+bEGOpwB2xokYowpQm4PQg5ZX6n46a68ZaGYDLJGo/uKhBIdZtO9SugnHAFiLzyODIaFGQEc+z1d8F4shHFO0zeRZgr9ORlDzxSu3ZE18nl4rAnBE/Qdw0WlqpE5JF36OCmgHDdUYrMlcQaXx73pmjiIIgag20+St+9G/zQKKY12CV8blhmFLhiut84QSO1vn/ML0JsiZm7pk3DM54I7m7TK"
     });
     const s3Client = new S3Client({ region: "us-east-1", credentials: credentials });
 
@@ -93,9 +95,9 @@ async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
 }
 
 var uploadProfilePhoto = async function (req, res) {
-  const imgName = req.body.imgName;
+  const imgName = req.file;
   //   const imgName = "frontend/golden-retriever-personality-1024x739.jpeg";
-  uploadImageFileToS3(imgName, "pennstagram-pics-i-vibe-with-ives", req.params.username)
+  uploadImageFileToS3(imgName.path, "pennstagram-pics-i-vibe-with-ives", req.params.username)
     .then(() => {
       res.status(201).json({ message: "Upload successful!" });
       return;
@@ -141,10 +143,12 @@ var getProfilePhoto = async function (req, res) {
 // POST /createPost
 var createPost = async function (req, res) {
   // TODO: add to posts table
+  console.log("got here");
   const username = req.params.username;
   const caption = req.body.caption;
-  const imageUrl = req.body.imageUrl;
+  const imageUrl = req.file;
   const hashtags = req.body.hashtags;
+  console.log(imageUrl);
   // req.session.username = username;
   // req.session.user_id = 8;
 
@@ -181,7 +185,7 @@ var createPost = async function (req, res) {
     const post_id = result.insertId.toString();
 
     if (imageUrl) {
-      uploadImageFileToS3(imageUrl, "pennstagram-pics-i-vibe-with-ives", post_id)
+      uploadImageFileToS3(imageUrl.path, "pennstagram-pics-i-vibe-with-ives", post_id)
         .then(() => console.log("updated"));
       const updatePostQuery = `UPDATE posts SET image = "https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${post_id}" WHERE post_id = ${post_id}`;
       const ans = await db.send_sql(updatePostQuery);
