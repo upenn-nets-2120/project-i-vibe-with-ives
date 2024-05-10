@@ -7,6 +7,7 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
   const [caption, setCaption] = useState('');
   const [imageUrl, setImageUrl] = useState('');  // State for the image URL
   const [hashtags, setHashtags] = useState('');  // State for hashtags
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const { username } = useParams();
 
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
@@ -22,6 +23,7 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
         setCaption('');
         setImageUrl('');  // Clear the image URL input
         setHashtags('');  // Clear the hashtags input
+        setUploadedImage(null);
         // Update posts
         updatePosts();
       }
@@ -48,6 +50,19 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
               required
             ></textarea>
           </div>
+          <div className="flex flex-col items-center justify-center">
+            <label htmlFor="uploadedImage" className="font-semibold mb-2">
+                Upload Profile Picture (required)
+            </label>
+            <input
+                id="uploadedImage"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setUploadedImage(e.target.value)}
+
+                // onChange={handleImageUpload}
+            />
+        </div>
           <div className='flex space-x-4 items-center justify-between'>
             <label htmlFor="imageUrl" className='font-semibold'>Image URL</label>
             <input id="imageUrl" type="text" className='outline-none bg-white rounded-md border border-slate-100 p-2'
