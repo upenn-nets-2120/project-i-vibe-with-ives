@@ -143,12 +143,12 @@ var getProfilePhoto = async function (req, res) {
 // POST /createPost
 var createPost = async function (req, res) {
   // TODO: add to posts table
-  console.log("got here");
+  // console.log("got here");
   const username = req.params.username;
   const caption = req.body.caption;
   const imageUrl = req.file;
   const hashtags = req.body.hashtags;
-  console.log(imageUrl);
+  // console.log(imageUrl);
   // req.session.username = username;
   // req.session.user_id = 8;
 

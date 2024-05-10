@@ -14,19 +14,19 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData();
-    console.log("Selected filea:", uploadedImage);
+    // console.log("Selected filea:", uploadedImage);
     if (uploadedImage) {
       formData.append('image', uploadedImage);
     }
     formData.append('caption', caption);
     formData.append('hashtags', hashtags);
-    console.log(formData);
+    // console.log(formData);
 
     try {
-      console.log("herea");
-      for (let pair of formData.entries()) {
-        console.log(pair[0]+ ', ' + pair[1]); 
-      }
+      // console.log("herea");
+      // for (let pair of formData.entries()) {
+      //   console.log(pair[0]+ ', ' + pair[1]); 
+      // }
       const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -94,7 +94,6 @@ function CreatePostComponent({ updatePosts }: { updatePosts: () => void }) {
               onClick={handleSubmit}>Create Post</button>
           </div>
         </div>
-        <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold'>Create Post</button>
       </form>
     </div>
   );
