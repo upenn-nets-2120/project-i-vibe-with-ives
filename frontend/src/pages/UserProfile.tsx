@@ -32,7 +32,7 @@ const UserProfile = () => {
   const [posts, setPosts] = useState<Post[]>([
     {
       post_id: 2,
-      parent_post: null,
+      // parent_post: null,
       caption: "dummy 1",
       author_id: 5,
       image: null,
@@ -40,7 +40,7 @@ const UserProfile = () => {
     },
     {
       post_id: 3,
-      parent_post: null,
+      // parent_post: null,
       caption: "dummy 2",
       author_id: 5,
       image: null,
@@ -146,12 +146,12 @@ const UserProfile = () => {
               <button onClick={friendRequest} className="btn btn-success">
                 {buttonText}
               </button>
-              <ListPopup
+              {showPop && <ListPopup
                 show={showPop}
                 handleClose={toggleFriends}
                 isFriends={true}
                 activeUser={activeUser ? activeUser : profile.username}
-              />
+              />}
             </div>
           </div>
         </div>

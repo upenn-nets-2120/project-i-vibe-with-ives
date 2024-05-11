@@ -60,9 +60,9 @@ const PostPopup = ({
   const [post, setPost] = useState<Post>(sourcePost);
   const [comments, setComments] = useState<Comment[]>([]);
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
-  const [liked, setLiked] = useState<boolean>(false);
   const [numLikes, setNumLikes] = useState<number | null>(sourcePost.num_likes);
-  const [userStartLike, setUserStartLike] = useState<boolean>(false); 
+  const [liked, setLiked] = useState<boolean>(false);
+  const [userStartLike, setUserStartLike] = useState<boolean>(false);
 
   const fetchData = async () => {
     try {

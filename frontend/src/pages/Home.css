@@ -1,0 +1,48 @@
+.home-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  .content-area {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .search-bar {
+    padding: 10px;
+    width: 100%;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    box-sizing: border-box;
+  }
+  
+  .posts-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .sidebar-right {
+    position: absolute;
+    top: 100px;
+    right: 5vw;
+    width: 400px; /* Adjust width as necessary */
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .create-post-button {
+    margin-bottom: 10px; /* Space between buttons */
+  }
+  

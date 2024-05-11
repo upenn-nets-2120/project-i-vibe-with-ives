@@ -31,8 +31,8 @@ const PostGrid = ({ gridPosts }: { gridPosts: Post[] }) => {
 
       <div className="profile-posts">
         <div className="post-grid">
-          {gridPosts.length == 0 && <h3>No posts to display.</h3>}
-          {gridPosts.map((post) => (
+          {(!gridPosts || gridPosts.length == 0) && <h3>No posts to display.</h3>}
+          {gridPosts && gridPosts.map((post) => (
             <PostThumbnail
               key={post.post_id}
               post={post}
