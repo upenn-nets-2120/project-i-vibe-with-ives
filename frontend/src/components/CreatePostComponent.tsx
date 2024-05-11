@@ -53,6 +53,8 @@ function CreatePostComponent({
     } catch (error) {
       console.error("Error creating post:", error);
     }
+
+    handleClose();
   };
 
   const showHideClassName = show ? "popup display-block" : "popup display-none";
@@ -127,60 +129,8 @@ function CreatePostComponent({
               id="uploadedImage"
               type="file"
               accept="image/*"
-              onChange={(e) => setCaption(e.target.value)}
+              onChange={(e) => setUploadedImage(e.target.files[0])}
               required
-            />
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="hashtags" className="font-semibold">
-              Hashtags
-            </label>
-            <input
-              id="hashtags"
-              type="text"
-              className="outline-none bg-white rounded-md border border-gray-300 p-2"
-              value={hashtags}
-              onChange={(e) => setUploadedImage(e.target.files[0])}
-            />
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="hashtags" className="font-semibold">
-              Hashtags
-            </label>
-            <input
-              id="hashtags"
-              type="text"
-              className="outline-none bg-white rounded-md border border-gray-300 p-2"
-              value={hashtags}
-              onChange={(e) => setUploadedImage(e.target.files[0])}
-            />
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="hashtags" className="font-semibold">
-              Hashtags
-            </label>
-            <input
-              id="hashtags"
-              type="text"
-              className="outline-none bg-white rounded-md border border-gray-300 p-2"
-              value={hashtags}
-              onChange={(e) => setUploadedImage(e.target.files[0])}
-            />
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="imageUrl" className="font-semibold">
-              Image URL
-            </label>
-            <input
-              id="imageUrl"
-              type="text"
-              className="outline-none bg-white rounded-md border border-slate-100 p-2"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
             />
           </div>
           <div className="flex flex-col space-y-2">
