@@ -20,60 +20,60 @@ const consumer = kafka.consumer({
 });
 
 let topic = config.topic;
-// let tweets = [];
-let tweets = [
-  {
-    quoted_tweet_id: null,
-    hashtags: [],
-    created_at: 1715196242000,
-    replied_to_tweet_id: null,
-    quotes: 2,
-    urls: 'https://ew.com/perfect-match-season-2-cast-harry-jowsey-dom-gabriel-8645395?taid=663bd152e2ae8c0001407232&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
-    replies: 0,
-    conversation_id: 1788288772704006100,
-    mentions: [],
-    id: 1788288772704006100,
-    text: "Meet the 'Perfect Match' season 2 cast, including stars from 'Too Hot to Handle,' 'The Circle,' 'Love is Blind,' and more. https://t.co/9yfEuoml0m",
-    author_id: 16312576,
-    retweets: 2,
-    retweet_id: null,
-    likes: 12
-  },
-  {
-    quoted_tweet_id: null,
-    hashtags: [],
-    created_at: 1715196063000,
-    replied_to_tweet_id: null,
-    quotes: 1,
-    urls: 'https://ew.com/steve-albini-dead-producer-nirvana-pixies-90s-rock-8645467?taid=663bd09e2692da0001c0e5f3&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
-    replies: 2,
-    conversation_id: 1788288019033731300,
-    mentions: [],
-    id: 1788288019033731300,
-    text: "Steve Albini, a musician and an audio engineer for bands like Nirvana and Pixies who helped define the sound of '90s alternative rock, has died at 61. https://t.co/YUJ1cNx90s",
-    author_id: 16312576,
-    retweets: 9,
-    retweet_id: null,
-    likes: 52
-  },
-  {
-    quoted_tweet_id: null,
-    hashtags: [],
-    created_at: 1715193904000,
-    replied_to_tweet_id: null,
-    quotes: 1,
-    urls: 'https://ew.com/alexander-skarsgard-harry-potter-actor-harry-melling-queer-biker-gang-movie-8645298?taid=663bc830216b8d0001848f86&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
-    replies: 2,
-    conversation_id: 1788278965536166000,
-    mentions: [],
-    id: 1788278965536166000,
-    text: "Alexander Skarsgård will take 'all sorts of virginities' from 'Harry Potter' star Harry Melling in an upcoming 'kinky' queer biker movie. https://t.co/pPqGzHjBDU",
-    author_id: 16312576,
-    retweets: 8,
-    retweet_id: null,
-    likes: 53
-  }
-];
+let tweets = [];
+// let tweets = [
+//   {
+//     quoted_tweet_id: null,
+//     hashtags: [],
+//     created_at: 1715196242000,
+//     replied_to_tweet_id: null,
+//     quotes: 2,
+//     urls: 'https://ew.com/perfect-match-season-2-cast-harry-jowsey-dom-gabriel-8645395?taid=663bd152e2ae8c0001407232&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
+//     replies: 0,
+//     conversation_id: 1788288772704006100,
+//     mentions: [],
+//     id: 1788288772704006100,
+//     text: "Meet the 'Perfect Match' season 2 cast, including stars from 'Too Hot to Handle,' 'The Circle,' 'Love is Blind,' and more. https://t.co/9yfEuoml0m",
+//     author_id: 16312576,
+//     retweets: 2,
+//     retweet_id: null,
+//     likes: 12
+//   },
+//   {
+//     quoted_tweet_id: null,
+//     hashtags: [],
+//     created_at: 1715196063000,
+//     replied_to_tweet_id: null,
+//     quotes: 1,
+//     urls: 'https://ew.com/steve-albini-dead-producer-nirvana-pixies-90s-rock-8645467?taid=663bd09e2692da0001c0e5f3&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
+//     replies: 2,
+//     conversation_id: 1788288019033731300,
+//     mentions: [],
+//     id: 1788288019033731300,
+//     text: "Steve Albini, a musician and an audio engineer for bands like Nirvana and Pixies who helped define the sound of '90s alternative rock, has died at 61. https://t.co/YUJ1cNx90s",
+//     author_id: 16312576,
+//     retweets: 9,
+//     retweet_id: null,
+//     likes: 52
+//   },
+//   {
+//     quoted_tweet_id: null,
+//     hashtags: [],
+//     created_at: 1715193904000,
+//     replied_to_tweet_id: null,
+//     quotes: 1,
+//     urls: 'https://ew.com/alexander-skarsgard-harry-potter-actor-harry-melling-queer-biker-gang-movie-8645298?taid=663bc830216b8d0001848f86&utm_campaign=entertainmentweekly_entertainmentweekly&utm_content=new&utm_medium=social&utm_source=twitter.com',
+//     replies: 2,
+//     conversation_id: 1788278965536166000,
+//     mentions: [],
+//     id: 1788278965536166000,
+//     text: "Alexander Skarsgård will take 'all sorts of virginities' from 'Harry Potter' star Harry Melling in an upcoming 'kinky' queer biker movie. https://t.co/pPqGzHjBDU",
+//     author_id: 16312576,
+//     retweets: 8,
+//     retweet_id: null,
+//     likes: 53
+//   }
+// ];
 
 function escapeSQLString(value) {
   if (value === null) return 'NULL';
@@ -131,8 +131,10 @@ const run = async () => {
       console.log({
         value: message.value.toString(),
       });
+      console.log("RECEIVED TWEET")
       const tweet = JSON.parse(message.value.toString());
       tweets.push(tweet);
+      // addToTable();
     },
   });
 
@@ -161,12 +163,13 @@ const run = async () => {
 
   // run addToTable every 10 seconds
   // setInterval(addToTable, 10000);
+  addToTable();
 
 }
 
 
-// run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
-addToTable();
+run().catch(e => console.error(`[example/consumer] ${e.message}`, e));
+// addToTable();
 
 process.on('SIGINT', async () => {
   console.log('Stopping consumer...');

@@ -19,6 +19,8 @@ function CreatePostComponent({ updatePosts, show, handleClose }: { updatePosts: 
     formData.append('caption', caption);
     formData.append('hashtags', hashtags);
 
+    console.log(formData)
+
     try {
       const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, formData, {
         headers: {
@@ -81,8 +83,9 @@ function CreatePostComponent({ updatePosts, show, handleClose }: { updatePosts: 
     // </div>
 
 
-    <div className={showHideClassName} onClick={handleClose}>
-        <section className="popup-main" onClick={handleClose}>
+    <div className={showHideClassName}>
+        <section className="popup-main">
+        <form onSubmit={handleSubmit}>
           <div className='flex flex-col space-y-2'>
             <label htmlFor="caption" className='font-semibold' onClick={handleClose}>Caption</label>
             <textarea
@@ -118,7 +121,8 @@ function CreatePostComponent({ updatePosts, show, handleClose }: { updatePosts: 
             />
           </div>
     
-          <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold' onClick={handleClose}>Create Post</button>
+          <button type="submit" className='w-full mt-4 px-4 py-2 rounded-md bg-indigo-500 text-white font-bold'>Create Post</button>
+          </form>
         </section>
       </div>
     );
