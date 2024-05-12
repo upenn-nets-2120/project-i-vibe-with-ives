@@ -1,5 +1,5 @@
 import React from "react";
-import "./Popup.css";
+// import "./Popup.css";
 import { Link, useParams } from "react-router-dom"; // Assuming you are using React Router for navigation
 
 import { useState } from "react";
@@ -31,7 +31,8 @@ const PostGrid = ({ gridPosts }: { gridPosts: Post[] }) => {
 
       <div className="profile-posts">
         <div className="post-grid">
-          {gridPosts.map((post) => (
+          {(!gridPosts || gridPosts.length == 0) && <h3>No posts to display.</h3>}
+          {gridPosts && gridPosts.map((post) => (
             <PostThumbnail
               key={post.post_id}
               post={post}
@@ -52,7 +53,7 @@ const PostThumbnail = ({
   onClick: (post: Post) => void;
 }) => {
   // default photo?
-  if (!post.image) return null;
+  if (!post.image) post.image = "https://t4.ftcdn.net/jpg/03/08/43/19/360_F_308431972_g5fuiXwgOZpDCMFQougq13hgSaQVHVro.jpg";
 
   return (
     <img

@@ -7,6 +7,7 @@ import Sidebar from '../components/Sidebar'; // Import the Sidebar component
 import CreatePostComponent from '../components/CreatePostComponent';
 import PostComponent from '../components/PostComponent';
 import FriendRecsComponent from '../components/FriendRecsComponent';
+import "./Home.css"
 
 axios.defaults.withCredentials = true;
 
@@ -16,6 +17,7 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState(""); // Search term state
+  const [showPop, setShowPop] = useState<boolean>(false);
 
   const fetchData = async () => {
     try {
@@ -27,8 +29,8 @@ export default function Home() {
     }
   };
 
-  const updatePosts = () => {
-    fetchData();
+  const toggleCreate = () => {
+    setShowPop(!showPop);
   };
 
   useEffect(() => {
@@ -41,18 +43,12 @@ export default function Home() {
     // Here you might want to filter posts or fetch based on the search
   };
   return (
-    <div className="w-screen h-screen flex">
+    <div className="home-container">
       <Sidebar /> {/* Use the Sidebar component */}
-      <div style={{ flex: 1, overflowY: "auto", position: 'relative' }}>
+      <div className="content-area">
         {/* Content area where posts and other components will be rendered */}
-        <div style={{ position: 'absolute', top: 100, right: -500 }}>
-
-          <CreatePostComponent updatePosts={updatePosts} />
-          <FriendRecsComponent />
-
-        </div>
         {/* Search Bar */}
-        <div style={{ width: '100%', padding: '10px' }}>
+        <div className='search-bar'>
           <input
             type="text"
             placeholder="Search posts..."
@@ -61,8 +57,7 @@ export default function Home() {
             style={{ width: '100%', padding: '8px', margin: '10px 0', boxSizing: 'border-box' }}
           />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '20px' }}>
-
+        <div className="posts-container">
           {posts.map((post) => (
             <PostComponent
               key={post.post_id}
@@ -72,6 +67,14 @@ export default function Home() {
               imageUrl={post.image}
             />
           ))}
+        </div>
+        
+        <div className="sidebar-right">
+          <button onClick={toggleCreate} className="create-post-button btn btn-primary">
+                  Create Post
+          </button>
+          {showPop && <CreatePostComponent show={showPop} handleClose={toggleCreate} updatePosts={fetchData} />}
+          <FriendRecsComponent />
         </div>
 
       </div>

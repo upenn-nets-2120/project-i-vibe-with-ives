@@ -217,7 +217,7 @@ var getFriends = async function (req, res) {
 };
 
 var post_request_friend = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
   const friend = req.body.friend;
 
   // if (helper.isLoggedIn(req, username) == false) {

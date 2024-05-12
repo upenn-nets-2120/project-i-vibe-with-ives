@@ -4,18 +4,31 @@ const db = require("../models/db_access.js");
 var get_user_posts = async function (req, res) {
   const username = req.params.username;
 
-  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, l.num_likes FROM posts p JOIN users u ON u.user_id = p.author_id JOIN num_likes l ON l.post_id = p.post_id WHERE u.username = "${username}";`;
+  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, l.num_likes FROM posts p JOIN users u ON u.user_id = p.author_id LEFT JOIN num_likes l ON l.post_id = p.post_id WHERE u.username = "${username}";`;
 
   const result = await db.send_sql(search);
 
   if (result.length == 0) {
-    res.status(409).json({ error: "User not found." });
+    res.status(200).json({ message: "No posts yet for this user." });
     return;
   }
 
   const posts = result;
 
-  res.status(200).json({ result: posts });
+
+  const formattedData = {
+    result: posts.map((item) => ({
+      post_id: item.post_id,
+      caption: item.caption,
+      author_id: item.author_id,
+      image: item.image,
+      time: item.time,
+      num_likes: item.num_likes == null ? 0 : item.num_likes,
+    })),
+  };
+
+  res.status(200).json(formattedData);
+
 };
 
 var send_like = async function (req, res) {
@@ -103,10 +116,21 @@ var get_id_post = async function (req, res) {
   const post_id = req.params.post_id;
 
   // get user_id of user with username username
-  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, l.num_likes FROM posts p JOIN num_likes l ON l.post_id = p.post_id WHERE p.post_id = '${post_id}';`;
+  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, l.num_likes FROM posts p LEFT JOIN num_likes l ON l.post_id = p.post_id WHERE p.post_id = '${post_id}';`;
   const answer = await db.send_sql(search);
   if (answer.length > 0) {
-    res.status(200).json({ result: answer[0] });
+    const formattedData = {
+      result: answer.map((item) => ({
+        post_id: item.post_id,
+        caption: item.caption,
+        author_id: item.author_id,
+        image: item.image,
+        time: item.time,
+        num_likes: item.num_likes == null ? 0 : item.num_likes,
+      })),
+    };
+    res.status(200).json(formattedData);
+
     return;
   } else {
     res.status(500).json({ message: "Post doesn't exist." });
@@ -167,6 +191,27 @@ var get_user_id = async function (username) {
   }
 }
 
+var get_linked_actor = async function (req, res) {
+  const linked_nconst = req.body.linked_nconst;  
+  console.log(linked_nconst);
+  
+  const insert = `SELECT primaryName from names where nconst = '${linked_nconst}';`;
+  try {
+      const result = await db.send_sql(insert);
+      if (result.length > 0) {
+          res.status(200).json({ actor :  result[0].primaryName });
+          return;
+      } else {
+          res.status(500).json({ error: "Error querying database." });
+          return;
+      }
+  } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: "Error querying database." });
+      return;
+  }
+};
+
 
 var routes = {
   get_user_posts: get_user_posts,
@@ -174,6 +219,7 @@ var routes = {
   get_id_post: get_id_post,
   are_friends_req: are_friends_req,
   are_friends: are_friends,
+  getLinkedActor: get_linked_actor
 }
 
 module.exports = routes;

@@ -170,6 +170,8 @@ var setActor = async function (req, res) {
 };
 
 
+
+
 var routes = {
     post_register: postRegister,
     get_actors: getActors,

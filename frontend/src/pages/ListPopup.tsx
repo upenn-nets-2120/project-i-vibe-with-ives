@@ -1,5 +1,5 @@
 import React from "react";
-import "./Popup.css";
+import "./ListPopup.css";
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
@@ -62,14 +62,19 @@ const ListPopup = ({
   return (
     <div className={showHideClassName}>
       <section className="popup-main">
-        {isFriends &&
-          friends.map((friend) => (
-            <h3 key={friend.friend_username}>{friend.friend_username}</h3>
-          ))}
-        {!isFriends &&
-          recommendations.map((rec) => (
-            <h3 key={rec.user_id}>{rec.username}</h3>
-          ))}
+        {isFriends ? (
+            friends.length > 0 ? (
+              friends.map((friend) => <h3 key={friend.friend_username}>{friend.friend_username}</h3>)
+            ) : (
+              <p>No friends to display.</p>
+            )
+          ) : (
+            recommendations.length > 0 ? (
+              recommendations.map((rec) => <h3 key={rec.user_id}>{rec.username}</h3>)
+            ) : (
+              <p>No recommendations to display.</p>
+            )
+          )}
 
         <button className="btn btn-success" onClick={handleClose}>
           Close
