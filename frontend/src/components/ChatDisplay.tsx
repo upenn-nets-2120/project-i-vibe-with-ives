@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ListPopup from "../pages/ListPopup";
+import ChatPopup from "../pages/ChatPopup";
 import axios from 'axios';
 import { useParams } from "react-router-dom";
 import config from '../../config.json';
@@ -123,7 +123,7 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
                         Send
                     </button>
                 </div>
-                {showPop && <ListPopup
+                {showPop && <ChatPopup
                     show={showPop}
                     handleClose={toggleFriends}
                     isFriends={isFriends}

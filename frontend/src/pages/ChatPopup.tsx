@@ -1,5 +1,5 @@
 import React from "react";
-import "./ListPopup.css";
+import "./ChatPopup.css";
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
