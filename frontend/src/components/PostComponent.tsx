@@ -20,6 +20,7 @@ export default function PostComponent({
   const [commentText, setCommentText] = useState(''); // State to track the comment input text
   const [post, setPost] = useState<Post | null>(null);
   const [selected, setSelected] = useState<boolean>(false);
+  const [profilePhoto, setProfilePhoto] = useState<string>("");
 
 
   const rootURL = config.serverRootURL;
@@ -47,6 +48,10 @@ export default function PostComponent({
           `http://localhost:8080/${id}/getPostById`
         );
         setPost(postResponse.data.result[0]);
+
+        const photoResponse = await axios.get(`${rootURL}/${user}/profilePhoto`)
+        setProfilePhoto(photoResponse.data.imageUrl)
+        console.log(profilePhoto)
 
       } catch (error) {
         console.error('Failed to fetch likes or liked status:', error);
@@ -100,49 +105,12 @@ export default function PostComponent({
 
 
   return (
-    // <div className='rounded-md bg-slate-50 w-full max-w-[500px] space-y-2 p-3'>
-    //   <div className='text-slate-800'>
-    //     <span className='font-semibold' onClick={() => navigate("/" + username + "/" + user + "/userProfile")}>@{user}</span> posted
-    //   </div>
-    //   {imageUrl && <img src={imageUrl} alt="Post image" className="w-full max-w-md h-auto rounded-md" />}
-    //   <div>
-    //     {caption}
-    //   </div>
-    //   <button
-    //     className={`mt-2 py-1 px-4 rounded ${liked ? 'bg-gray-400' : 'bg-blue-500 text-white'} hover:bg-blue-700`}
-    //     onClick={handleLike}>
-    //     {liked ? 'Unlike' : 'Like'}
-    //   </button>
-    //   <span>{likes} Likes</span>
-    //   <div style={{ width: '100%', padding: '10px' }}>
-    //     <form onSubmit={handleCommentSubmit}>
-    //       <input
-    //         type="text"
-    //         placeholder="Write a comment..."
-    //         value={commentText}
-    //         onChange={(e) => setCommentText(e.target.value)}
-    //         style={{ width: '100%', padding: '8px', margin: '10px 0', boxSizing: 'border-box' }}
-    //       />
-    //       <button type="submit" style={{ width: '100%', padding: '8px', backgroundColor: 'blue', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-    //         Post Comment
-    //       </button>
-    //     </form>
-    //   </div>
-    //   <div>
-    //     <h3>Comments:</h3>
-    //     {comments.map(comment => (
-    //       <div key={comment.comment_id} className="bg-gray-100 rounded p-2 my-1">
-    //         <strong>{comment.username}:</strong> {comment.caption}
-    //       </div>
-    //     ))}
-    //   </div>
-    // </div>
     <div className='post-container'>
       {selected && (
         <PostPopup onClick={() => setSelected(false)} sourcePost={post} />
       )}
       <div className='post-header'>
-        <img src={"https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${user}'s profile`} className="profile-pic-poster"/>
+        <img src={(profilePhoto || profilePhoto == "undefined") ? profilePhoto : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${user}'s profile`} className="profile-pic-poster"/>
         <span className='username' onClick={() => navigate(`/${username}/${user}/userProfile`)}> <strong>@{user}:</strong> posted </span> 
         
       </div>
@@ -176,7 +144,7 @@ export default function PostComponent({
           <h3>Comments:</h3>
           {comments.slice(0, Math.min(comments.length, 2)).map(comment => (
             <div key={comment.comment_id} className="comment-home">
-              <img src={"https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${comment.username}'s profile`} className="profile-pic-commenter"/>
+              <img src={(comment.selfie || comment.selfie == "undefined") ? comment.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${comment.username}'s profile`} className="profile-pic-commenter"/>
               <strong className='comment-username'>{comment.username}:</strong> {comment.caption}
             </div>
           ))}

@@ -52,6 +52,8 @@ async function create_tables(db) {
     );"
   );
 
+  // CREATE TABLE IF NOT EXISTS tweet_hashtags (id bigint, hashtag VARCHAR(255), FOREIGN KEY (id) REFERENCES tweets(id));
+
   var q4 = db.create_tables('CREATE TABLE IF NOT EXISTS user_hashtags ( \
       user_id INT, \
       hashtag VARCHAR(255), \
