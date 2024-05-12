@@ -77,6 +77,7 @@ const MyProfile = () => {
       `${rootURL}/${username}/getProfile`
     );
     setProfile(response.data.result);
+    console.log(response.data.result);
 
     try {
       const response2 = await axios.get(
@@ -89,7 +90,7 @@ const MyProfile = () => {
     
 
     const response3 = await axios.post(
-      `${rootURL}/getLinkedActor`, { linked_nconst: profile.linked_nconst }
+      `${rootURL}/getLinkedActor`, { linked_nconst: response.data.result.linked_nconst }
     )
 
     setActor(response3.data.actor);
@@ -121,7 +122,7 @@ const MyProfile = () => {
         <div className="profile-top">
           <div className="profile-picture">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcVxC8L9WXWSVzQAshqEzQKvF0kl8vTiZoYANDEZRdDQ&s"
+              src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
               alt="Profile"
             />
           </div>

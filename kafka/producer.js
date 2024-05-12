@@ -5,7 +5,7 @@
 const express = require('express');
 const { Kafka } = require('kafkajs');
 
-var config = require('./config.json');
+var config = require('./kafka_config.json');
 
 const app = express();
 const kafka = new Kafka({
@@ -20,7 +20,15 @@ const runProducer = async () => {
     await producer.send({
         topic: "FederatedPosts",
         messages: [
-            { value: 'pushing to federated posts' },
+            { post_json: 
+                post_json = JSON.stringify( {
+                    "username":"pwu",
+                    "source_sit":"g22",
+                    "post_uuid_within_site":"2",
+                    "post_text":"red roses for me!",
+                    "content_type":"text/html"
+                })
+             },
         ],
     })
 

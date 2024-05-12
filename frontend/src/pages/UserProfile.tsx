@@ -130,7 +130,7 @@ const UserProfile = () => {
         <div className="profile-top">
           <div className="profile-picture">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcVxC8L9WXWSVzQAshqEzQKvF0kl8vTiZoYANDEZRdDQ&s"
+              src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
               alt="Profile"
             />
           </div>
