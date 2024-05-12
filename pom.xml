@@ -323,6 +323,17 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>feed</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>edu.upenn.cis.nets2120.hw3.FeedAdsorption</mainClass>
+                            <arguments>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>livy</id>
                         <goals>
                             <goal>java</goal>

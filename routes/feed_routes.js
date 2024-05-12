@@ -210,7 +210,6 @@ var getFeed = async function (req, res) {
   // get all posts from users that the current user follows and their own posts
   const username = req.params.username;
   // req.session.username = username;
-
   if (helper.isLoggedIn(req, username) == false) {
     res.status(403).json({ error: "Not logged in." });
     return;
@@ -235,28 +234,47 @@ var getFeed = async function (req, res) {
     return;
   }
 
-  //get user id of all users that the current user follows and themselves
-  //   const search = ` WITH feed_users AS (SELECT users.user_id, users.username FROM users JOIN friends ON users.linked_nconst = friends.followed WHERE friends.follower = '${req.session.linked_id}' UNION SELECT user_id, username FROM users WHERE user_id = '${req.session.user_id}') 
-  //     SELECT f.username, posts.parent_post, posts.title, posts.content FROM feed_users f JOIN posts ON f.user_id = posts.author_id;`;
+  const getPosts = `
+SELECT r.source, r.score, po.post_id, p.author_id AS post_author, u.username, p.caption, p.time, p.image, tw.id, t.author_id, t.text
+FROM rankings r 
+LEFT JOIN post_hashtags po ON po.hashtag = r.destination 
+LEFT JOIN tweet_hashtags tw ON tw.hashtag = r.destination 
+LEFT JOIN posts p ON po.post_id = p.post_id AND po.post_id IS NOT NULL
+LEFT JOIN tweets t ON tw.id = t.id AND tw.id IS NOT NULL
+LEFT JOIN users u ON p.author_id = u.user_id AND po.post_id IS NOT NULL
+WHERE source = 1 AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
 
-  const search = `SELECT DISTINCT p.post_id, p.caption, p.time, p.author_id, u.username, p.image FROM posts p LEFT JOIN users u ON p.author_id = u.user_id ORDER BY p.time DESC;`
   try {
-    const result = await db.send_sql(search);
+    const result = await db.send_sql(getPosts);
+
     const formattedData = {
-      results: result.map((item) => ({
-        post_id: item.post_id,
-        caption: item.caption,
-        time: item.time,
-        author_id: item.author_id,
-        username: item.username,
-        image: item.image
-      })),
+      results: result.map(item => {
+        if (item.post_id !== null) {
+          return {
+            type: 'post',
+            author: item.post_author,
+            username: item.username,
+            caption: item.caption,
+            time: item.time,
+            image: item.image
+          };
+        } else if (item.id !== null) {
+          return {
+            type: 'tweet',
+            author: item.author_id,
+            username: 'twitteruser', 
+            caption: item.text
+          };
+        }
+      }).filter(x => x !== undefined), 
     };
+
+
     res.status(200).json(formattedData);
+    // res.status(200);
     return;
 
   } catch (err) {
-    console.log(results);
     console.log("third");
     res.status(500).json({ error: "Error querying database." + err });
     return;
