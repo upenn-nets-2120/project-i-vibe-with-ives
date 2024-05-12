@@ -56,17 +56,25 @@ async function fetchAndEmbedPeople(embeddings) {
 }
   
 var get_similar_posts = async function (req, res) {
-  const query = req.body.query;
+  const query = req.query.question;
+  if (!query) {
+    res.status(200);
+    return;
+  }
   const type = 'posts';
   const similar = await get_similar(query, type);
-  res.status(200).json({ similar: similar });
+  res.status(200).json({ answer: similar });
 }
 
 var get_similar_people = async function (req, res) {
-  const query = req.body.query;
+  const query = req.query.question;
+  if (!query) {
+    res.status(200);
+    return;
+  }
   const type = 'people';
   const similar = await get_similar(query, type);
-  res.status(200).json({ similar: similar });
+  res.status(200).json({ answer: similar });
 }
 
 var get_similar = async function (query, type) {  
@@ -87,7 +95,11 @@ var get_similar = async function (query, type) {
 }
 
 var ask_question = async function (req, res) {
-  const question = req.body.question;
+  const question = req.query.question;
+  if (!question) {
+    res.status(200);
+    return;
+  }
 
   const posts = await get_similar(question, 'posts');
   const context = posts.map(post => post.caption).join('\n');
@@ -105,15 +117,13 @@ var ask_question = async function (req, res) {
 
   const result = await chain.invoke({ question: question, context: context});
 
-  console.log(result);
-
-  res.status(200).json({ message: result });
+  res.status(200).json({ answer: result.content });
 }
 
 var search_routes = {
-    get_ask_question: ask_question,
+    ask_question: ask_question,
     get_similar_posts: get_similar_posts,
     get_similar_people: get_similar_people
-};
+};  
 
 module.exports = search_routes;
