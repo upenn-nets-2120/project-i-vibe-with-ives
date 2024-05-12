@@ -1,9 +1,16 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-import Signup from "./pages/Signup";
+import Chats from "./pages/Chats";
+import Notifications from "./pages/Notifications";
 import Friends from "./pages/Friends";
-import ChatInterface from "./pages/ChatInterface";
+import Settings from "./pages/Settings";
+import Profile from "./pages/MyProfile";
+import UserProfile from "./pages/UserProfile";
+import Signup from "./pages/Signup";
+import Actor from "./pages/Actor";
+import SearchAndChat from "./pages/Search";
+
 
 function App() {
   return (
@@ -12,8 +19,14 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/:username/home' element={<Home />} />
+        <Route path='/:username/chats' element={<Chats />} />
+        <Route path='/:username/notifications' element={<Notifications />} />
         <Route path='/:username/friends' element={<Friends />} />
-        <Route path="/:username/chat" element={<ChatInterface />} />
+        <Route path='/:username/profile' element={<Profile />} />
+        <Route path='/:username/:activeUser/userProfile' element={<UserProfile />} />
+        <Route path='/:username/settings' element={<Settings />} />
+        <Route path='/:username/actors' element={<Actor />} />
+        <Route path='/:username/search' element={<SearchAndChat />} />
       </Routes>
     </BrowserRouter>
   )

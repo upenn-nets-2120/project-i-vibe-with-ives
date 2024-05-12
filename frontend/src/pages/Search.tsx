@@ -7,7 +7,19 @@ import PostComponent from '../components/PostComponent';
 
 axios.defaults.withCredentials = true;
 
-const MessageComponent = ({ sender, message }) => {
+interface Message {
+    sender: string;
+    message: string;
+}
+
+interface Post {
+    post_id: string;
+    username: string;
+    caption: string;
+    image: string;
+}
+
+const MessageComponent: React.FC<{ sender: string, message: string }> = ({ sender, message }) => {
     return (
         <div className={`w-full flex ${sender === "user" ? "justify-end" : ""}`}>
             <div className={`text-left max-w-[70%] p-3 rounded-md break-words ${sender === "user" ? "bg-blue-100" : "bg-slate-200"}`}>
@@ -18,25 +30,26 @@ const MessageComponent = ({ sender, message }) => {
 };
 
 export default function SearchAndChat() {
-    const { username } = useParams();
+    const { username } = useParams<{ username: string }>();
     const rootURL = config.serverRootURL;
 
-    const [posts, setPosts] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [messages, setMessages] = useState([
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [messages, setMessages] = useState<Message[]>([
         {
             sender: "chatbot",
             message: "Hi there! How can I assist you today?",
         },
     ]);
-    const [input, setInput] = useState('');
+    const [input, setInput] = useState<string>('');
 
-    const fetchPosts = async (term) => {
+    const fetchPosts = async (term: string) => {
         try {
+            console.log("Searching for:", term);
             const response = await axios.get(`${rootURL}/${username}/searchPosts`, {
-                params: { term }
+                params: { question : term }
             });
-            setPosts(response.data.results);
+            console.log(response.data.answer);
+            setPosts(response.data.answer.slice(0, 5)); // Limiting to top 5 posts
         } catch (error) {
             console.error("Failed to fetch posts:", error);
         }
@@ -46,19 +59,23 @@ export default function SearchAndChat() {
         fetchPosts("");
     }, [username]);
 
-    const handleSearch = () => {
-        console.log("Searching for:", searchTerm);
-        fetchPosts(searchTerm);
-    };
-
     const sendMessage = async () => {
         setMessages([...messages, { sender: "user", message: input }]);
 
         try {
+            console.log("Sending question:", input);
             const response = await axios.get(`${rootURL}/${username}/askQuestion`, {
                 params: { question: input }
             });
-            setMessages([...messages, { sender: "user", message: input }, { sender: "chatbot", message: response.data.answer }]);
+            console.log("Response:", response.data.answer);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { sender: "user", message: input },
+                { sender: "chatbot", message: response.data.answer }
+            ]);
+
+            fetchPosts(input);
+
         } catch (error) {
             console.error('Error sending message:', error);
         }
@@ -70,46 +87,9 @@ export default function SearchAndChat() {
         <div className="w-screen h-screen flex">
             <Sidebar />
             <div className="flex-1 p-4">
-                <div className="mb-4 flex">
-                    <input
-                        type="text"
-                        placeholder="Search posts..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ flex: 1, padding: '8px', boxSizing: 'border-box' }}
-                    />
-                    <button
-                        onClick={handleSearch}
-                        style={{ padding: '8px 16px', marginLeft: '8px' }}
-                    >
-                        Search
-                    </button>
-                </div>
-                <div className="mb-8">
-                    {posts.length > 0 ? (
-                        posts.map((post) => (
-                            <PostComponent
-                                key={post.post_id}
-                                id={post.post_id}
-                                user={post.username}
-                                caption={post.caption}
-                                imageUrl={post.image}
-                            />
-                        ))
-                    ) : (
-                        <p>No posts found.</p>
-                    )}
-                </div>
-                <div className="bg-white p-4 rounded shadow-md">
-                    <h2 className="text-xl font-bold mb-4">Q&A with LLM</h2>
-                    <div className="h-[30rem] overflow-y-scroll mb-4">
-                        <div className="space-y-2">
-                            {messages.map((msg, index) => (
-                                <MessageComponent key={index} sender={msg.sender} message={msg.message} />
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex space-x-2">
+                <div className="bg-white p-4 rounded shadow-md mb-4">
+                    <h2 className="text-xl font-bold mb-4">Ask a Question</h2>
+                    <div className="flex space-x-2 mb-4">
                         <input
                             type="text"
                             placeholder="Ask something!"
@@ -128,6 +108,32 @@ export default function SearchAndChat() {
                         >
                             Send
                         </button>
+                    </div>
+                    <div className="h-[10rem] overflow-y-scroll mb-4 bg-gray-100 p-2 rounded">
+                        <h3 className="text-lg font-bold mb-2">LLM Response</h3>
+                        <div className="space-y-2">
+                            {messages.filter(msg => msg.sender === "chatbot").map((msg, index) => (
+                                <MessageComponent key={index} sender={msg.sender} message={msg.message} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white p-4 rounded shadow-md">
+                    <h2 className="text-xl font-bold mb-4">Related Posts</h2>
+                    <div className="space-y-4">
+                        {posts.length > 0 ? (
+                            posts.map((post) => (
+                                <PostComponent
+                                    key={post.post_id}
+                                    id={post.post_id}
+                                    user={post.username}
+                                    caption={post.caption}
+                                    imageUrl={post.image}
+                                />
+                            ))
+                        ) : (
+                            <p>No posts found.</p>
+                        )}
                     </div>
                 </div>
             </div>

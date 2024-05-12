@@ -10,9 +10,14 @@ export default function Signup() {
 
   // TODO: set appropriate state variables
   const [username, setUsername] = useState("");
-  const [linked_nconst, setLinkedNconst] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [affiliation, setAffiliation] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
 
   const rootURL = config.serverRootURL;
 
@@ -23,22 +28,46 @@ export default function Signup() {
       alert("Passwords do not match");
       return;
     }
-    try {
+    if (username === "" || password === "" || email === "") {
+      alert("username, password, and email are required!");
+      return;
+    }
+    // Validate birthday
+    const birthdayDate = new Date(birthday);
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Remove time part
 
+    // Check if the birthday is in the future
+    if (birthdayDate > currentDate) {
+      alert("Birthday cannot be in the future.");
+      return;
+    }
+
+    // Calculate age to check minimum age requirement
+    const ageDiffMs = currentDate.getTime() - birthdayDate.getTime();
+    const ageDate = new Date(ageDiffMs);
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+
+    // Check if age meets the minimum requirement
+    if (age < 13) {
+      alert("You must be at least 13 years old to register.");
+      return;
+    }
+    try {
       // console.log(JSON.stringify({  username,password, linked_nconst}))
 
       //axios post with body parameters
       const response = await axios.post(`${rootURL}/register`, {
-        username, password, linked_nconst
-      });      
-      
+        username, password, firstName, lastName, affiliation, birthday, email
+      });
+
     } catch (error) {
       console.log(error)
       alert(error);
     }
 
     alert("Successfully registered!");
-    navigate("/" + username + "/home");
+    navigate("/" + username + "/actors");
 
   };
 
@@ -51,7 +80,7 @@ export default function Signup() {
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="username" className="font-semibold">
-              Username
+              Username (required)
             </label>
             <input
               id="username"
@@ -62,20 +91,68 @@ export default function Signup() {
             />
           </div>
           <div className="flex space-x-4 items-center justify-between">
-            <label htmlFor="linked_nconst" className="font-semibold">
-              Linked nconst
+            <label htmlFor="firstName" className="font-semibold">
+              First Name
             </label>
             <input
-              id="linked_nconst"
+              id="firstName"
               type="text"
               className="outline-none bg-white rounded-md border border-slate-100 p-2"
-              value={linked_nconst}
-              onChange={(e) => setLinkedNconst(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-4 items-center justify-between">
+            <label htmlFor="lastName" className="font-semibold">
+              Last Name
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              className="outline-none bg-white rounded-md border border-slate-100 p-2"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-4 items-center justify-between">
+            <label htmlFor="affiliation" className="font-semibold">
+              Affiliation
+            </label>
+            <input
+              id="affiliation"
+              type="text"
+              className="outline-none bg-white rounded-md border border-slate-100 p-2"
+              value={affiliation}
+              onChange={(e) => setAffiliation(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-4 items-center justify-between">
+            <label htmlFor="birthday" className="font-semibold">
+              Birthday
+            </label>
+            <input
+              id="birthday"
+              type="date"
+              className="outline-none bg-white rounded-md border border-slate-100 p-2"
+              value={birthday}
+              onChange={(e) => setBirthday(e.target.value)}
+            />
+          </div>
+          <div className="flex space-x-4 items-center justify-between">
+            <label htmlFor="email" className="font-semibold">
+              Email (required)
+            </label>
+            <input
+              id="email"
+              type="text"
+              className="outline-none bg-white rounded-md border border-slate-100 p-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="password" className="font-semibold">
-              Password
+              Password (required)
             </label>
             <input
               id="password"
@@ -87,7 +164,7 @@ export default function Signup() {
           </div>
           <div className="flex space-x-4 items-center justify-between">
             <label htmlFor="confirmPassword" className="font-semibold">
-              Confirm Password
+              Confirm Password (required)
             </label>
             <input
               id="confirmPassword"
@@ -111,3 +188,4 @@ export default function Signup() {
     </div>
   );
 }
+

@@ -56,17 +56,27 @@ async function fetchAndEmbedPeople(embeddings) {
 }
   
 var get_similar_posts = async function (req, res) {
-  const query = req.body.query;
+  console.log("HI" + req.query.question);
+  const query = req.query.question;
+  if (!query) {
+    res.status(200);
+    return;
+  }
   const type = 'posts';
   const similar = await get_similar(query, type);
-  res.status(200).json({ similar: similar });
+  res.status(200).json({ answer: similar });
 }
 
 var get_similar_people = async function (req, res) {
-  const query = req.body.query;
+  console.log(req);
+  const query = req.query.question;
+  if (!query) {
+    res.status(200);
+    return;
+  }
   const type = 'people';
   const similar = await get_similar(query, type);
-  res.status(200).json({ similar: similar });
+  res.status(200).json({ answer: similar });
 }
 
 var get_similar = async function (query, type) {  
@@ -86,8 +96,14 @@ var get_similar = async function (query, type) {
 
 }
 
-var getMovie = async function (req, res) {
-  const question = req.body.question;
+var ask_question = async function (req, res) {
+  const question = req.query.question;
+  console.log(req);
+  console.log("HI" + req.query.question);
+  if (!question) {
+    res.status(200);
+    return;
+  }
 
   const posts = await get_similar(question, 'posts');
   const context = posts.map(post => post.caption).join('\n');
@@ -107,13 +123,15 @@ var getMovie = async function (req, res) {
 
   console.log(result);
 
-  res.status(200).json({ message: result });
+  console.log(result.content);
+
+  res.status(200).json({ answer: result.content });
 }
 
 var routes2 = {
-    get_movie: getMovie,
+    ask_question: ask_question,
     get_similar_posts: get_similar_posts,
     get_similar_people: get_similar_people
-};
+};  
 
 module.exports = routes2;

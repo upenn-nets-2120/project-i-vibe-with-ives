@@ -16,7 +16,6 @@ function register_routes(app) {
   app.get("/:username/feed", routes.get_feed);
   // TODO: register getMovie, which does not need a :username
   //       Make it compatible with the call from ChatInterface.tsx
-  app.post("/:username/movies", routes2.get_movie);
 
   // chat routes
   app.get("/:username/chats", routes.get_chats);
@@ -41,7 +40,8 @@ function register_routes(app) {
   app.post("/:username/removeFriend", routes.post_remove_friend);
 
   // search routes
-  app.get("/search/posts", routes2.get_similar_posts);
-  app.get("/search/people", routes2.get_similar_people);
+  app.get("/:username/searchPosts", routes2.get_similar_posts);
+  app.get("/:username/searchPeople", routes2.get_similar_people);
+  app.get("/:username/askQuestion", routes2.ask_question);
 
 }
