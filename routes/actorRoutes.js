@@ -97,7 +97,6 @@ var getActors = async function (req, res) {
     }
 
     const img = req.file.path; // Using the path where multer saved the file
-
     try {
         const collection = await client.getOrCreateCollection({
             name: "face-api",

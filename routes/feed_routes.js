@@ -80,7 +80,6 @@ async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
   try {
     // Read the image file from local filesystem
     const fileContent = await fs.readFile(filePath);
-
     // Create an instance of the S3 client
     let credentials = fromIni({
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -163,6 +162,7 @@ var createPost = async function (req, res) {
   const caption = req.body.caption;
   const imageUrl = req.file;
   const hashtags = req.body.hashtags;
+  // console.log(imageUrl);
   // req.session.username = username;
   // req.session.user_id = 8;
 

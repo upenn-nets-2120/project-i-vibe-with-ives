@@ -24,7 +24,7 @@ function register_routes(app) {
   app.post("/login", routes.post_login);
   app.get("/logout", routes.post_logout);
 
-  // pw
+  // actor routes
   app.post("/register", actorRoutes.post_register);
   app.post("/:username/actors", upload.single("file"), actorRoutes.get_actors);
   app.post("/:username/setActor", actorRoutes.set_actor);
