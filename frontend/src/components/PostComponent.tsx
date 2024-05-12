@@ -21,6 +21,7 @@ export default function PostComponent({
   const [post, setPost] = useState<Post | null>(null);
   const [selected, setSelected] = useState<boolean>(false);
   const [profilePhoto, setProfilePhoto] = useState<string>("");
+  const tweet= user === "twitteruser";
 
 
   const rootURL = config.serverRootURL;
@@ -28,30 +29,58 @@ export default function PostComponent({
   useEffect(() => {
     const fetchLikes = async () => {
       try {
-
-        if (user != "twitter_user") {
+        try {
+          
           const likesResponse = await axios.get(`${rootURL}/${id}/getLikes`);
           setLikes(likesResponse.data);
-        } else {
-          const likesResponse = await axios.get(`${rootURL}/${id}/getLikesTwitter`);
-          setLikes(likesResponse.data);
+          
+        } catch (error) {
+          console.error('Failed to fetch likes:', error);
         }
         
-        const likedResponse = await axios.get(`${rootURL}/${id}/${username}/getLikedByUser`);
-        setLiked(likedResponse.data);
+        try {
+          const likedResponse = await axios.get(`${rootURL}/${id}/${username}/getLikedByUser`);
+          setLiked(likedResponse.data);
 
-        const commentsResponse = await axios.get(`${rootURL}/${id}/getComments`);
-        setComments(commentsResponse.data || []);  // Assuming `comments` is the field where comments are stored
-        // console.log("comments response", commentsResponse.data);
+        } catch (error) {
+          console.error('Failed to fetch liked status:', error);
+        }
+        
+        try {
+          const commentsResponse = await axios.get(`${rootURL}/${id}/getComments`);
+          setComments(commentsResponse.data || []);  // Assuming `comments` is the field where comments are stored
 
-        const postResponse = await axios.get(
-          `http://localhost:8080/${id}/getPostById`
-        );
-        setPost(postResponse.data.result[0]);
+        } catch (error) {
+          console.error('Failed to fetch comments:', error);
+        }
 
-        const photoResponse = await axios.get(`${rootURL}/${user}/profilePhoto`)
-        setProfilePhoto(photoResponse.data.imageUrl)
-        console.log(profilePhoto)
+        try {
+          if (tweet) {
+            const postResponse = await axios.get(
+              `http://localhost:8080/${id}/getTweetById`
+            );
+            setPost(postResponse.data.result[0]);
+          } else {
+            const postResponse = await axios.get(
+              `http://localhost:8080/${id}/getPostById`
+            );
+            setPost(postResponse.data.result[0]);
+          }
+
+        } catch (error) {
+          console.error('Failed to fetch post:', error);
+        }
+
+        try {
+
+          const photoResponse = await axios.get(`${rootURL}/${user}/profilePhoto`)
+          setProfilePhoto(photoResponse.data.imageUrl)
+        // console.log("setting profile pics")
+        // console.log(profilePhoto)
+
+        } catch (err) {
+          console.error('Failed to fetch profile photo:', err);
+        }
 
       } catch (error) {
         console.error('Failed to fetch likes or liked status:', error);

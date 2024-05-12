@@ -32,6 +32,7 @@ export interface Post {
   author_id: number;
   image: string | null;
   num_likes: number | null;
+  username: string | null;
 }
 
 const MyProfile = () => {

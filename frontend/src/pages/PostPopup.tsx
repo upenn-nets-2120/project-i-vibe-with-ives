@@ -7,6 +7,8 @@ import axios from "axios";
 import "./Popup.css";
 import React from "react";
 import { Post } from "./MyProfile";
+import config from '../../config.json';
+
 
 type Hashtag = {
   hashtag: string;
@@ -60,33 +62,74 @@ const PostPopup = ({
   const [post, setPost] = useState<Post>(sourcePost);
   const [comments, setComments] = useState<Comment[]>([]);
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
-  const [numLikes, setNumLikes] = useState<number | null>(sourcePost.num_likes);
+  const [numLikes, setNumLikes] = useState(0);
   const [liked, setLiked] = useState<boolean>(false);
   const [userStartLike, setUserStartLike] = useState<boolean>(false);
+  const tweet = sourcePost.username === "twitteruser";
+  const rootURL = config.serverRootURL;
 
   const fetchData = async () => {
+
     try {
-      const response = await axios.get(
-        `http://localhost:8080/${sourcePost.post_id}/getPostById`
-      );
-      setPost(response.data.result[0]);
 
-      const response2 = await axios.get(
-        `http://localhost:8080/${sourcePost.post_id}/getComments`
-      );
-      setComments(response2.data);
+      try {
 
-      const response3 = await axios.get(
-        `http://localhost:8080/${sourcePost.post_id}/getHashtags`
-      );
-      setHashtags(response3.data);
+        if (tweet) {
+          const response = await axios.get(
+            `http://localhost:8080/${sourcePost.post_id}/getTweetById`
+          );
+          setPost(response.data.result[0]);
+        } else {
+          const response = await axios.get(
+            `http://localhost:8080/${sourcePost.post_id}/getPostById`
+          );
+          setPost(response.data.result[0]);
+        }
 
-      const response4 = await axios.get(
-        `http://localhost:8080/${sourcePost.post_id}/${activeUser ? activeUser : username}/getLikedByUser`
-      );
+      } catch (err) {
+        console.error("error getting post", err);
+      }
+      
+      try {
+        const response2 = await axios.get(
+          `http://localhost:8080/${sourcePost.post_id}/getComments`
+        );
+        setComments(response2.data);
+      } catch (err) {
+        console.error("error getting comments", err);
+      }
+      
+      
+      try {
+        const response3 = await axios.get(
+          `http://localhost:8080/${sourcePost.post_id}/getHashtags`
+        );
+        setHashtags(response3.data);
 
-      setLiked(response4.data);
-      setUserStartLike(response4.data);
+      } catch (err) {
+        console.error("error getting hashtags", err);
+      }
+
+
+      try {
+
+        const response4 = await axios.get(
+          `http://localhost:8080/${sourcePost.post_id}/${activeUser ? activeUser : username}/getLikedByUser`
+        );
+  
+        setLiked(response4.data);
+        setUserStartLike(response4.data);
+
+      } catch (err) {
+        console.error("error getting liked status", err);
+      }
+
+      try {
+        const likesResponse = await axios.get(`${rootURL}/${sourcePost.post_id}/getLikes`);
+        setNumLikes(likesResponse.data);
+      } catch (error) {
+        console.error('Failed to fetch likes:', error);
+      }
 
     } catch (error) {
       console.error(error);
@@ -97,10 +140,26 @@ const PostPopup = ({
     fetchData();
   }, []);
 
-  const handleLike = () => {
-    if (liked && numLikes) setNumLikes(numLikes - 1);
-    else if (!liked && numLikes) setNumLikes(numLikes + 1);
-    setLiked(!liked);
+  const handleLike = async () => {
+    try {
+      let response;
+      if (!liked) {
+        response = await axios.post(`${rootURL}/${username}/likePost`, { post_id: post.post_id });
+        if (response.status === 201) {
+          setNumLikes(numLikes + 1);
+          setLiked(true);
+        }
+      } else {
+        console.log(post.post_id)
+        response = await axios.post(`${rootURL}/${username}/unlikePost`, { post_id: post.post_id });
+        if (response.status === 200) {
+          setNumLikes(numLikes - 1);
+          setLiked(false);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle like on the post:', error);
+    }
   };
 
   const updatePost = async () => {
@@ -136,7 +195,7 @@ const PostPopup = ({
             </div>
             <span className = "title-span">
               <div className="post-title section">
-                <p>@{username}</p>
+                <p>@{post.username}</p>
                 <p>{post.caption}</p>
               </div>
             </span>

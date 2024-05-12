@@ -267,6 +267,7 @@ WHERE source = 1 AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
         if (item.post_id !== null) {
           return {
             type: 'post',
+            post_id: item.post_id,
             author: item.post_author,
             username: item.username,
             caption: item.caption,
@@ -276,6 +277,7 @@ WHERE source = 1 AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
         } else if (item.id !== null) {
           return {
             type: 'tweet',
+            post_id: item.id,
             author: item.author_id,
             username: 'twitteruser',
             caption: item.text
@@ -492,7 +494,7 @@ var get_hashtags = async function (req, res) {
   const post_id = req.params.post_id;
 
   // get user_id of user with username username
-  const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id};`;
+  const search = `SELECT hashtag FROM post_hashtags WHERE post_id = ${post_id} UNION SELECT hashtag FROM tweet_hashtags WHERE id = ${post_id};`;
   const answer = await db.send_sql(search);
   if (answer.length == 0) {
     res.status(200).json([]);

@@ -46,7 +46,7 @@ export default function Sidebar() {
 const sidebarStyle = {
     width: "50px",
     backgroundColor: "#000",
-    height: "100%",
+    // height: "100%",
     padding: "10px 0",
     boxShadow: "2px 0 5px rgba(0,0,0,0.1)"
 };

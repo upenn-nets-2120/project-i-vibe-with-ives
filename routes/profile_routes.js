@@ -116,7 +116,7 @@ var get_id_post = async function (req, res) {
   const post_id = req.params.post_id;
 
   // get user_id of user with username username
-  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, l.num_likes FROM posts p LEFT JOIN num_likes l ON l.post_id = p.post_id WHERE p.post_id = '${post_id}';`;
+  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT p.*, u.username, l.num_likes FROM posts p LEFT JOIN num_likes l ON l.post_id = p.post_id JOIN users u on u.user_id = p.author_id WHERE p.post_id = '${post_id}';`;
   const answer = await db.send_sql(search);
   if (answer.length > 0) {
     const formattedData = {
@@ -124,8 +124,35 @@ var get_id_post = async function (req, res) {
         post_id: item.post_id,
         caption: item.caption,
         author_id: item.author_id,
+        username: item.username,
         image: item.image,
         time: item.time,
+        num_likes: item.num_likes == null ? 0 : item.num_likes,
+      })),
+    };
+    res.status(200).json(formattedData);
+
+    return;
+  } else {
+    res.status(500).json({ message: "Post doesn't exist." });
+    return;
+  }
+}
+
+
+var get_id_tweet = async function (req, res) {
+  const post_id = req.params.post_id;
+
+  // get user_id of user with username username
+  const search = `WITH num_likes AS (SELECT post_id, COUNT(*) as num_likes FROM likes GROUP BY post_id) SELECT t.id as post_id, t.text as caption, t.author_id, l.num_likes FROM tweets t LEFT JOIN num_likes l ON l.post_id = t.id WHERE t.id = '${post_id}';`;
+  const answer = await db.send_sql(search);
+  if (answer.length > 0) {
+    const formattedData = {
+      result: answer.map((item) => ({
+        post_id: item.post_id,
+        caption: item.caption,
+        author_id: item.author_id,
+        username: "twitteruser",
         num_likes: item.num_likes == null ? 0 : item.num_likes,
       })),
     };
@@ -191,6 +218,17 @@ var get_user_id = async function (username) {
   }
 }
 
+var get_user_name = async function (user_id) {
+  // get user_id of user with username username
+  const search = `SELECT username FROM users WHERE user_id = '${user_id}';`;
+  const answer = await db.send_sql(search);
+  if (answer.length == 0) {
+    return null;
+  } else {
+    return answer[0].username;
+  }
+}
+
 var get_linked_actor = async function (req, res) {
   const linked_nconst = req.body.linked_nconst;
   console.log(linked_nconst);
@@ -217,6 +255,7 @@ var routes = {
   get_user_posts: get_user_posts,
   send_like: send_like,
   get_id_post: get_id_post,
+  get_id_tweet: get_id_tweet,
   are_friends_req: are_friends_req,
   are_friends: are_friends,
   getLinkedActor: get_linked_actor,
