@@ -155,9 +155,16 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
-          <div>
+          {buttonState === 3 ? 
+          (
+            <div>
             <PostProfileHandler posts={posts} />
           </div>
+          ) : <div>
+          <h3>Must be friends with {profile.username} to see posts.</h3>
+        </div>
+          }
+          
         </div>
       </div>
     </div>

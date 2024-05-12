@@ -82,6 +82,8 @@ function register_routes(app) {
   app.get("/:loggedIn/hasRequested/:username", profile_routes.are_friends_req);
   app.get("/:loggedIn/isFriendsWith/:username", profile_routes.are_friends);
   app.post("/getLinkedActor", profile_routes.getLinkedActor);
+  app.get("/:post_id/getTweetById", profile_routes.get_id_tweet);
+
 
   // notification routes
   app.get("/:username/getFriendRequests", notifs_routes.get_friend_requests);

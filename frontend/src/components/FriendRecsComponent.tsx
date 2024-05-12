@@ -53,9 +53,10 @@ function FriendRecsComponent() {
             {recommendations.map((rec, index) => (
               <li key={index} className='p-2 text-center'>
               {/* Link to user's profile page */}
-              <Link to={`/${username}/${rec.username}/userProfile`} className="text-blue-500 hover:text-blue-700">
+              {/* <Link to={`/${username}/${rec.username}/userProfile`} className="text-blue-500 hover:text-blue-700">
                 {rec.username}
-              </Link>
+              </Link> */}
+              <h3  className="hover:text-blue-700" onClick={() => navigate(`/${username}/${rec.username}/userProfile`)}>{rec.username}</h3>
             </li>
             ))}
           </ul>

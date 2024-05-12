@@ -3,7 +3,7 @@ import "./ListPopup.css";
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface Friend {
   friend_username: string;
@@ -27,6 +27,8 @@ const ListPopup = ({
 }) => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const { username } = useParams();
+  const navigate = useNavigate();
   const fetchData = async () => {
     try {
       const response = await axios.get(
@@ -59,18 +61,25 @@ const ListPopup = ({
 
   const showHideClassName = show ? "popup display-block" : "popup display-none";
 
+
+
+
   return (
     <div className={showHideClassName}>
       <section className="popup-main">
         {isFriends ? (
             friends.length > 0 ? (
-              friends.map((friend) => <h3 key={friend.friend_username}>{friend.friend_username}</h3>)
+              friends.map((friend) => 
+                  <h3  className="hover:text-blue-700" onClick={() => navigate(`/${username}/${friend.friend_username}/userProfile`)}>{friend.friend_username}</h3>
+              )
             ) : (
               <p>No friends to display.</p>
             )
           ) : (
             recommendations.length > 0 ? (
-              recommendations.map((rec) => <h3 key={rec.user_id}>{rec.username}</h3>)
+              recommendations.map((rec) => 
+                <h3  className="hover:text-blue-700" onClick={() => navigate(`/${username}/${rec.username}/userProfile`)}>{rec.username}</h3>
+              )
             ) : (
               <p>No recommendations to display.</p>
             )

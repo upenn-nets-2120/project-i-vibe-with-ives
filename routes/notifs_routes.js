@@ -36,9 +36,13 @@ var post_accept_friend = async function (req, res) {
     const result3 = await db.insert_items(delete_query);
 
     if (result3 > 0) {
-        const insert = `INSERT INTO friends (user1_id, user2_id) VALUES ('${user_id}', '${friend_id}');`;
+        let insert = `INSERT INTO friends (user1_id, user2_id) VALUES ('${user_id}', '${friend_id}');`;
 
-        const result4 = await db.insert_items(insert);
+        let result4 = await db.insert_items(insert);
+
+        insert = `INSERT INTO friends (user1_id, user2_id) VALUES ('${friend_id}', '${user_id}');`;
+
+        result4 = await db.insert_items(insert);
 
         if (result4 > 0) {
             res.status(201).json({ message: "Friend added." });

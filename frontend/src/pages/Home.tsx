@@ -15,6 +15,8 @@ export default function Home() {
   const { username } = useParams();
   const rootURL = config.serverRootURL;
   const [posts, setPosts] = useState([]);
+  const [renderPosts, setRenderPosts] = useState([]); // Filtered posts to render
+  const [pages, setPages] = useState(1); // Number of pages
 
   const [searchTerm, setSearchTerm] = useState(""); // Search term state
   const [showPop, setShowPop] = useState<boolean>(false);
@@ -23,6 +25,7 @@ export default function Home() {
     try {
       const response = await axios.get(`${rootURL}/${username}/feed`);
       setPosts(response.data.results); // assuming the data is in the results field
+      setRenderPosts(response.data.results.slice(0, Math.min(pages * 10, response.data.results.length))); 
     } catch (error) {
       alert("Failed to fetch posts");
       console.error("Failed to fetch posts:", error);
@@ -36,6 +39,30 @@ export default function Home() {
   useEffect(() => {
     fetchData();
   }, [username]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      console.log(scrollTop)
+      if (scrollTop + windowHeight >= documentHeight - 100) {
+        // If scrolled to bottom, load more data
+        setPages(pages + 1);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [pages, renderPosts]);
+
+  useEffect(() => {
+    setRenderPosts(posts.slice(0, Math.min(pages * 10, posts.length)));
+  }, [pages])
+
+
 
   const handleSearch = () => {
     // For now, just logs the search term
@@ -58,7 +85,7 @@ export default function Home() {
           />
         </div>
         <div className="posts-container">
-          {posts.map((post) => (
+          {renderPosts.map((post) => (
             <PostComponent
               key={post.post_id}
               id={post.post_id}
