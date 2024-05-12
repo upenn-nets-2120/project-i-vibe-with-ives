@@ -88,5 +88,6 @@ function register_routes(app) {
   // search routes
   app.get("/:username/searchPosts", search_routes.get_similar_posts);
   app.get("/:username/searchPeople", search_routes.get_similar_people);
-  app.get("/:username/askQuestion", search_routes.get_ask_question);
+  app.get("/:username/askQuestion", search_routes.ask_question);
+
 }
