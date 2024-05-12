@@ -10,6 +10,7 @@ const upload = multer({ dest: 'uploads/' });
 
 // Face Matching imports from app.js
 const { initializeFaceModels, findTopKMatches, indexAllFaces, getEmbeddings, client } = require('../basic-face-match/app');
+const { get } = require("http");
 
 initializeFaceModels().catch(console.error);
 
@@ -70,6 +71,8 @@ var postRegister = async function (req, res) {
                     // try catch and await call
                     const result = await db.insert_items(insert);
                     if (result > 0) {
+                        req.session.user_id = await get_user_id(username);
+                        req.session.username = username;
                         res.status(200).json({ username: username });
                         return;
                     } else {

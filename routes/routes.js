@@ -220,10 +220,10 @@ var post_request_friend = async function (req, res) {
   const username = req.params.username;
   const friend = req.body.friend;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
@@ -262,10 +262,10 @@ var post_accept_friend = async function (req, res) {
   const username = req.body.username;
   const friend = req.body.friend;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
@@ -310,10 +310,10 @@ var post_remove_friend = async function (req, res) {
   const username = req.body.username;
   const friend = req.body.friend;
 
-  // if (helper.isLoggedIn(req, username) == false) {
-  //   res.status(403).json({ error: "Not logged in." });
-  //   return;
-  // }
+  if (helper.isLoggedIn(req, username) == false) {
+    res.status(403).json({ error: "Not logged in." });
+    return;
+  }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
@@ -520,7 +520,7 @@ var get_messages = async function (req, res) {
     JOIN group_members gm ON u.user_id = gm.user_id
     JOIN \`groups\` g ON gm.group_id = g.group_id
     JOIN messages m ON g.group_id = m.group_id AND u.user_id = m.sender_id
-    WHERE u.username = '${username}' AND g.group_name = '${chat_name}';
+    WHERE g.group_name = '${chat_name}';
   `;
   try {
     const result = await db.send_sql(search);

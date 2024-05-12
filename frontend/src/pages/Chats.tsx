@@ -13,8 +13,9 @@ interface Chat {
 }
 
 interface Message {
-    id: string;
+    username: string;
     message: string;
+    timestamp: Date;
 }
 
 axios.defaults.withCredentials = true;
@@ -51,6 +52,8 @@ export default function Chats() {
         }
     };
 
+
+
     useEffect(() => {
         fetchChats();
     }, [username]);
@@ -80,7 +83,10 @@ export default function Chats() {
                 <ChatDisplay
                     chat={selectedChat}
                     messages={messages}
-                    onSendMessage={sendMessage}  // Pass the sendMessage function to ChatDisplay
+                    onSendMessage={sendMessage}
+                    fetchChats={fetchChats}
+                    setSelectedChat={setSelectedChat}
+                    currentUser={username}  // Pass the sendMessage function to ChatDisplay
                 />
             )}
         </div>

@@ -192,23 +192,23 @@ var get_user_id = async function (username) {
 }
 
 var get_linked_actor = async function (req, res) {
-  const linked_nconst = req.body.linked_nconst;  
+  const linked_nconst = req.body.linked_nconst;
   console.log(linked_nconst);
-  
+
   const insert = `SELECT primaryName from names where nconst = '${linked_nconst}';`;
   try {
-      const result = await db.send_sql(insert);
-      if (result.length > 0) {
-          res.status(200).json({ actor :  result[0].primaryName });
-          return;
-      } else {
-          res.status(500).json({ error: "Error querying database." });
-          return;
-      }
-  } catch (err) {
-      console.log(err);
+    const result = await db.send_sql(insert);
+    if (result.length > 0) {
+      res.status(200).json({ actor: result[0].primaryName });
+      return;
+    } else {
       res.status(500).json({ error: "Error querying database." });
       return;
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Error querying database." });
+    return;
   }
 };
 
@@ -219,7 +219,7 @@ var routes = {
   get_id_post: get_id_post,
   are_friends_req: are_friends_req,
   are_friends: are_friends,
-  getLinkedActor: get_linked_actor
+  getLinkedActor: get_linked_actor,
 }
 
 module.exports = routes;

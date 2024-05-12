@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import ListPopup from "../pages/ListPopup";
+import axios from 'axios';
+import { useParams } from "react-router-dom";
+import config from '../../config.json';
 
 interface Chat {
     id: string;
@@ -6,19 +10,55 @@ interface Chat {
 }
 
 interface Message {
-    id: string;
+    username: string;
     message: string;
+    timestamp: Date;
 }
 
 interface ChatDisplayProps {
     chat: Chat;
     messages: Message[];
     onSendMessage: (messageText: string, chat: Chat) => void;  // Function to handle sending messages
+    fetchChats: () => void;  // Function to fetch chats
+    setSelectedChat: (chat: Chat | null) => void;  // Function to set the selected chat
+    currentUser: string | undefined;
 }
 
-const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage }) => {
-    const [messageText, setMessageText] = useState('');
+const MessageComponent = ({
+    sender,
+    message,
+    currentUser
+}: {
+    sender: string;
+    message: string;
+    currentUser: string | undefined;
+}) => {
+    return (
+        <div className={`w-full flex ${sender == currentUser ? "justify-end" : "justify-start"}`}>
+            <div
+                className={`text-left max-w-[70%] p-3 rounded-md break-words ${sender == currentUser ? "bg-blue-100" : "bg-slate-200"
+                    }`}
+            >
+                {message}
+            </div>
+        </div>
+    );
+};
 
+const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage, fetchChats, setSelectedChat, currentUser }) => {
+    const [messageText, setMessageText] = useState('');
+    const [showPop, setShowPop] = useState<boolean>(false);
+    const [isFriends, setIsFriends] = useState<boolean>(false);
+    const rootURL = config.serverRootURL;
+    const { username } = useParams();
+
+    const toggleFriends = () => {
+        setShowPop(!showPop);
+        setIsFriends(true);
+    };
+
+    console.log(currentUser);
+    console.log(messages);
     const handleSendMessage = () => {
         if (messageText.trim()) {
             onSendMessage(messageText, chat);
@@ -29,20 +69,44 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
     const handleKeyPress = (event: React.KeyboardEvent) => {
         if (event.key === 'Enter') {
             handleSendMessage();
+            event.preventDefault();
         }
     };
 
+    const handleLeave = async () => {
+        try {
+            await axios.post(`${rootURL}/${username}/leaveChat`, {
+                chat_name: chat.name,
+                username: currentUser,
+            });
+            // Assume fetchChats and setSelectedChat are passed down as props
+            fetchChats();         // Refresh the list of chats
+            setSelectedChat(null); // Clear the current chat display
+        } catch (error) {
+            console.error("Failed to leave chat:", error);
+        }
+    };
+
+
     return (
         <div className="flex-1 bg-gray-200 overflow-y-auto">
-            <div className="p-4 bg-blue-500 text-white text-lg">
-                {chat.name}
+            <div className="flex justify-between items-center p-4 bg-blue-500 text-white text-lg">
+                <span>{chat.name}</span>
+                <div>
+                    <button onClick={toggleFriends} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2">
+                        Invite Friends
+                    </button>
+                    <button onClick={handleLeave} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                        Leave
+                    </button>
+                </div>
             </div>
             <div className="p-4">
-                {messages.map((message) => (
-                    <div key={message.id} className="bg-white p-3 my-2 rounded shadow">
-                        {message.message}
-                    </div>
-                ))}
+                {messages.map((message) => {
+                    return (
+                        <MessageComponent sender={message.username} message={message.message} currentUser={currentUser} />
+                    );
+                })}
                 <div className="flex p-4">
                     <input
                         type="text"
@@ -59,6 +123,12 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
                         Send
                     </button>
                 </div>
+                {showPop && <ListPopup
+                    show={showPop}
+                    handleClose={toggleFriends}
+                    isFriends={isFriends}
+                    activeUser={currentUser ? currentUser : ''}
+                />}
             </div>
         </div>
     );
