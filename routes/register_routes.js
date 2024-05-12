@@ -59,28 +59,20 @@ function register_routes(app) {
   app.post("/:username/removeFriend", routes.post_remove_friend);
 
   // feed stuff:
-  app.post(
-    "/:username/createPost",
-    upload.single("image"),
-    feed_routes.create_post
-  );
+  app.post("/:username/createPost", upload.single('image'), feed_routes.create_post);
   app.get("/:username/feed", feed_routes.get_feed);
-  app.post(
-    "/:username/uploadProfilePhoto",
-    upload.single("image"),
-    feed_routes.upload_profile_photo
-  );
+  app.post("/:username/uploadProfilePhoto", upload.single('file'), feed_routes.upload_profile_photo);
   app.get("/:username/profilePhoto", feed_routes.get_profile_photo);
   app.post("/:username/likePost", feed_routes.like_post);
   app.post("/:username/unlikePost", feed_routes.unlike_post);
 
   app.get("/:post_id/getLikes", feed_routes.get_likes);
   app.get("/:post_id/:username/getLikedByUser", feed_routes.get_liked_by_user);
-  app.get("/:post_id/getLikesTwitter", feed_routes.get_likes_twitter);
 
   app.get("/:post_id/getComments", feed_routes.get_comments);
   app.post("/:username/createComment", feed_routes.create_comment);
   app.get("/:post_id/getHashtags", feed_routes.get_hashtags);
+
 
   // profile stuff:
   app.get("/:username/getPosts", profile_routes.get_user_posts);
