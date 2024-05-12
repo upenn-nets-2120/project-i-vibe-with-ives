@@ -23,8 +23,8 @@ const { fromIni } = require("@aws-sdk/credential-provider-ini");
 const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
 const fs = require('fs').promises;
 const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// const storage = multer.memoryStorage();
+const upload = multer({ dest: 'uploads/' });
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
 // initializeFaceModels().catch(console.error);
