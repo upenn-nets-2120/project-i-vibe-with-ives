@@ -171,7 +171,16 @@ var setActor = async function (req, res) {
     }
 };
 
-
+var get_user_id = async function (username) {
+    // get user_id of user with username username
+    const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+    const answer = await db.send_sql(search);
+    if (answer.length == 0) {
+        return null;
+    } else {
+        return answer[0].user_id;
+    }
+}
 
 
 var routes = {

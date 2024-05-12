@@ -114,18 +114,15 @@ var uploadProfilePhoto = async function (req, res) {
   const imgName = req.file;
   const username = req.params.username;
   //   const imgName = "frontend/golden-retriever-personality-1024x739.jpeg";
-  await uploadImageFileToS3(
-    imgName.path,
-    "pennstagram-pics-i-vibe-with-ives",
-    req.params.username
-  )
+  uploadImageFileToS3(imgName.path, "pennstagram-pics-i-vibe-with-ives", username)
     .then(() => {
       res.status(201).json({ message: "Upload successful!" });
     })
-    .catch((error) =>
-      res.status(400).json({ message: "Upload failed:" + error })
-    );
-};
+    .catch((error) => res.status(400).json({ message: "Upload failed:" + error }))
+  const updatePostQuery = `UPDATE users SET selfie = "https://pennstagram-pics-i-vibe-with-ives.s3.amazonaws.com/${username}" WHERE username = '${username}'`;
+  const ans = await db.send_sql(updatePostQuery);
+}
+
 
 // directly returns the image
 // var getProfilePhoto = async function (req,res) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import config from '../../config.json';
 import Sidebar from '../components/Sidebar'; // Ensure Sidebar is correctly imported
@@ -9,6 +9,7 @@ axios.defaults.withCredentials = true;
 export default function Settings() {
     const { username } = useParams();
     const rootURL = config.serverRootURL;
+    const navigate = useNavigate();
 
     const [hashtag, setHashtag] = useState('');
     const [userEmail, setUserEmail] = useState('');
@@ -85,6 +86,9 @@ export default function Settings() {
                         <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Change Password</button>
                     </form>
                 </div>
+                <button onClick={() => navigate("/" + username + "/actors")} className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
+                    Change Profile Picture
+                </button>
             </div>
         </div>
     );

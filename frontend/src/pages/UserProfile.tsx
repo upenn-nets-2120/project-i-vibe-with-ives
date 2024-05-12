@@ -57,12 +57,12 @@ const UserProfile = () => {
 
   const fetchData = async () => {
     // const username = activeUser;
-    let response = await axios.get(
+    const profileResponse = await axios.get(
       `http://localhost:8080/${activeUser}/getProfile`
     );
-    setProfile(response.data.result);
+    setProfile(profileResponse.data.result);
 
-    response = await axios.get(`http://localhost:8080/${activeUser}/getPosts`);
+    let response = await axios.get(`http://localhost:8080/${activeUser}/getPosts`);
     setPosts(response.data.result);
 
     response = await axios.get(
@@ -81,7 +81,7 @@ const UserProfile = () => {
     }
 
     const response3 = await axios.post(
-      `http://localhost:8080/getLinkedActor`, { linked_nconst: profile.linked_nconst }
+      `http://localhost:8080/getLinkedActor`, { linked_nconst: profileResponse.data.result.linked_nconst }
     )
 
     setActor(response3.data.actor);
@@ -127,37 +127,37 @@ const UserProfile = () => {
       <Sidebar />
       <div className="profile-container">
         <div className="content">
-        <div className="profile-top">
-          <div className="profile-picture">
-            <img
-              src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
-              alt="Profile"
-            />
-          </div>
-          <div className="profile-info">
-            <h2>@ {profile.username}</h2>
-            <p>
-              {profile.first_name} {profile.last_name} is now linked to {actor}!
-            </p>
-            <div className="profile-buttons">
-              <button onClick={toggleFriends} className="btn btn-success">
-                Friends
-              </button>
-              <button onClick={friendRequest} className="btn btn-success">
-                {buttonText}
-              </button>
-              {showPop && <ListPopup
-                show={showPop}
-                handleClose={toggleFriends}
-                isFriends={true}
-                activeUser={activeUser ? activeUser : profile.username}
-              />}
+          <div className="profile-top">
+            <div className="profile-picture">
+              <img
+                src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
+                alt="Profile"
+              />
+            </div>
+            <div className="profile-info">
+              <h2>@ {profile.username}</h2>
+              <p>
+                {profile.first_name} {profile.last_name} is now linked to {actor}!
+              </p>
+              <div className="profile-buttons">
+                <button onClick={toggleFriends} className="btn btn-success">
+                  Friends
+                </button>
+                <button onClick={friendRequest} className="btn btn-success">
+                  {buttonText}
+                </button>
+                {showPop && <ListPopup
+                  show={showPop}
+                  handleClose={toggleFriends}
+                  isFriends={true}
+                  activeUser={activeUser ? activeUser : profile.username}
+                />}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <PostProfileHandler posts={posts} />
-        </div>
+          <div>
+            <PostProfileHandler posts={posts} />
+          </div>
         </div>
       </div>
     </div>
