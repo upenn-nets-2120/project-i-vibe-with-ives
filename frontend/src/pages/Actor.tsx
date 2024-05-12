@@ -31,6 +31,12 @@ const Actor: React.FC = () => {
             formData.append("file", file);
 
             try {
+                await axios.post(`${rootURL}/${username}/uploadProfilePhoto`, formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                    withCredentials: true,
+                });
                 const response = await axios.post(`${rootURL}/${username}/actors`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
@@ -39,6 +45,7 @@ const Actor: React.FC = () => {
                 // Assuming the response data contains a list of actors
                 setActorOptions(response.data.actors);
                 setShowActorPopup(true);
+
             } catch (error) {
                 console.error("Error uploading image and fetching actors:", error);
             }

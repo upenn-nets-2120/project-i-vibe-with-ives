@@ -22,7 +22,7 @@ function register_routes(app) {
   app.post("/login", routes.post_login);
   app.get("/logout", routes.post_logout);
 
-  // pw
+  // actor routes
   app.post("/register", actorRoutes.post_register);
   app.post("/:username/actors", upload.single('file'), actorRoutes.get_actors);
   app.post("/:username/setActor", actorRoutes.set_actor);
@@ -60,7 +60,7 @@ function register_routes(app) {
   // feed stuff:
   app.post("/:username/createPost", upload.single('image'), feed_routes.create_post);
   app.get("/:username/feed", feed_routes.get_feed);
-  app.post("/:username/uploadProfilePhoto", upload.single('image'), feed_routes.upload_profile_photo);
+  app.post("/:username/uploadProfilePhoto", upload.single('file'), feed_routes.upload_profile_photo);
   app.get("/:username/profilePhoto", feed_routes.get_profile_photo);
   app.post("/:username/likePost", feed_routes.like_post);
   app.post("/:username/unlikePost", feed_routes.unlike_post);
