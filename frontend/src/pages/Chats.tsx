@@ -5,6 +5,7 @@ import config from '../../config.json';
 import Sidebar from '../components/Sidebar';
 import ChatList from '../components/ChatList';
 import ChatDisplay from '../components/ChatDisplay';
+import ChatPopup from "../pages/ChatPopup";
 
 // Define interfaces for your data structures
 interface Chat {
@@ -27,6 +28,14 @@ export default function Chats() {
     const [chats, setChats] = useState<Chat[]>([]);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [isCreatingChat, setIsCreatingChat] = useState(false);
+    const [showPop, setShowPop] = useState<boolean>(false);
+    const [isFriends, setIsFriends] = useState<boolean>(false);
+
+    const toggleFriends = () => {
+        setShowPop(!showPop);
+        setIsFriends(true);
+    };
 
     const fetchChats = async () => {
         try {
@@ -52,8 +61,6 @@ export default function Chats() {
         }
     };
 
-
-
     useEffect(() => {
         fetchChats();
     }, [username]);
@@ -75,10 +82,22 @@ export default function Chats() {
         }
     };
 
+    const handleCreateChat = () => {
+        // Implement logic to handle creating a new chat
+        console.log('Creating new chat...');
+        setIsCreatingChat(true);
+        // Additional logic to actually create the chat would go here
+    };
+
     return (
         <div className="w-screen h-screen flex">
             <Sidebar />
-            <ChatList chats={chats} onSelectChat={setSelectedChat} />
+            <div className="flex flex-col">
+                <button onClick={toggleFriends} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Create Chat
+                </button>
+                <ChatList chats={chats} onSelectChat={setSelectedChat} />
+            </div>
             {selectedChat && (
                 <ChatDisplay
                     chat={selectedChat}
@@ -89,6 +108,12 @@ export default function Chats() {
                     currentUser={username}  // Pass the sendMessage function to ChatDisplay
                 />
             )}
+            {showPop && <ChatPopup
+                show={showPop}
+                handleClose={toggleFriends}
+                isFriends={isFriends}
+                activeUser={username ? username : ''}
+            />}
         </div>
     );
 }

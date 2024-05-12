@@ -44,6 +44,7 @@ function register_routes(app) {
   app.post("/:username/leaveChat", routes.post_leave_chat);
   app.post("/:username/inviteMember", routes.post_invite_member);
   app.post("/:username/joinChat", routes.post_join_chat);
+  app.post("/:username/rejectChat", notifs_routes.post_reject_chat);
 
   // random setters
 
@@ -84,6 +85,7 @@ function register_routes(app) {
 
   // notification routes
   app.get("/:username/getFriendRequests", notifs_routes.get_friend_requests);
+  app.get("/:username/getChatRequests", notifs_routes.get_chat_requests);
 
   // search routes
   app.get("/:username/searchPosts", search_routes.get_similar_posts);

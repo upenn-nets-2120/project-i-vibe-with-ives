@@ -9,6 +9,7 @@ import Profile from "./pages/MyProfile";
 import UserProfile from "./pages/UserProfile";
 import Signup from "./pages/Signup";
 import Actor from "./pages/Actor";
+import Search from "./pages/Search";
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path='/:username/:activeUser/userProfile' element={<UserProfile />} />
         <Route path='/:username/settings' element={<Settings />} />
         <Route path='/:username/actors' element={<Actor />} />
+        <Route path='/:username/search' element={<Search />} />
       </Routes>
     </BrowserRouter>
   )

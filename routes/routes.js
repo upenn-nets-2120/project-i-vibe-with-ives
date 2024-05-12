@@ -654,55 +654,62 @@ var post_join_chat = async function (req, res) {
   const username = req.body.username;
   const chat_name = req.body.chat_name;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // Check if user is logged in
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
-
+  // Check if user exists
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
-
   if (result.length == 0) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
-
   const user_id = result[0].user_id;
 
+  // Check if chat exists
   const search2 = `SELECT group_id FROM \`groups\` WHERE group_name = '${chat_name}';`;
   const result2 = await db.send_sql(search2);
-
   if (result2.length == 0) {
     res.status(404).json({ error: "Chat not found." });
     return;
   }
-
   const chat_id = result2[0].group_id;
 
+  // Check if user is already a member of the chat
+  const check_member = `SELECT * FROM group_members WHERE group_id = '${chat_id}' AND user_id = '${user_id}';`;
+  const member_result = await db.send_sql(check_member);
+  if (member_result.length > 0) {
+    return res.status(200).json({ message: "User is already a member of the chat." });
+  }
+
+  // Check if user has an invite
   const search3 = `SELECT * FROM invites WHERE user_id = '${user_id}' AND group_id = '${chat_id}';`;
-
   const result3 = await db.send_sql(search3);
-
   if (result3.length == 0) {
     res.status(403).json({ error: "User is not invited to chat." });
     return;
   }
 
-  const insert = `INSERT INTO group_members (group_id, user_id) VALUES ('${chat_id}', '${user_id}');`;
-  const result4 = await db.insert_items(insert);
-
-  if (result4 > 0) {
-    res.status(201).json({ message: "User joined chat." });
-    return;
+  // Delete invite
+  const delete_query = `DELETE FROM invites WHERE group_id = '${chat_id}' AND user_id = '${user_id}';`;
+  const delResult = await db.insert_items(delete_query);
+  if (delResult > 0) {
+    console.log("Invite removed.");
+    // Insert user into group_members
+    const insert = `INSERT INTO group_members (group_id, user_id) VALUES ('${chat_id}', '${user_id}');`;
+    const result4 = await db.insert_items(insert);
+    if (result4 > 0) {
+      console.log("User joined chat.");
+      return res.status(201).json({ message: "User joined chat." });
+    }
   }
 
   return res.status(500).json({ error: "Error querying database." });
 };
+
 // HERE
 var post_add_hashtag = async function (req, res) {
   const username = req.body.username;

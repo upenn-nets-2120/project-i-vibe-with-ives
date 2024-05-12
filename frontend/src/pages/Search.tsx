@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import axios from 'axios';
 import config from '../../config.json';
-import Sidebar from '../components/Sidebar'; 
+import Sidebar from '../components/Sidebar';
 import PostComponent from '../components/PostComponent';
 
 axios.defaults.withCredentials = true;
@@ -46,7 +46,7 @@ export default function SearchAndChat() {
         try {
             console.log("Searching for:", term);
             const response = await axios.get(`${rootURL}/${username}/searchPosts`, {
-                params: { question : term }
+                params: { question: term }
             });
             console.log(response.data.answer);
             setPosts(response.data.answer.slice(0, 5)); // Limiting to top 5 posts

@@ -35,7 +35,7 @@ export default function Sidebar() {
             <button style={buttonStyle} onClick={() => navigate("/" + username + "/chats")}><i className="fas fa-comments"></i></button>
             <button style={buttonStyle} onClick={() => navigate("/" + username + "/search")}><i className="fas fa-question-circle"></i></button>
             <button style={buttonStyle} onClick={() => navigate("/" + username + "/notifications")}><i className="fas fa-bell"></i></button>
-            <button style={buttonStyle} onClick={() => navigate("/" + username + "/friends")}><i className="fas fa-user-friends"></i></button>
+            {/* <button style={buttonStyle} onClick={() => navigate("/" + username + "/friends")}><i className="fas fa-user-friends"></i></button> */}
             <button style={buttonStyle} onClick={() => navigate("/" + username + "/profile")}><i className="fas fa-user-circle"></i></button>
             <button style={buttonStyle} onClick={() => navigate("/" + username + "/settings")}><i className="fas fa-cog"></i></button>
             <button style={buttonStyle} onClick={handleLogout}><i className="fas fa-sign-out-alt"></i></button>
