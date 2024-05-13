@@ -129,6 +129,7 @@ export default function SearchAndChat() {
                                     user={post.username}
                                     caption={post.caption}
                                     imageUrl={post.image}
+                                    isSearch={true}
                                 />
                             ))
                         ) : (

@@ -68,7 +68,7 @@ export default function Login() {
           <div className="w-full flex justify-center">
             <button
               type="button"
-              className="px-4 py-2 rounded-md bg-indigo-500 outline-none font-bold text-white"
+              className="px-4 py-2 rounded-md bg-green-500 outline-none font-bold text-white"
               onClick={handleLogin}
             >
               Log in

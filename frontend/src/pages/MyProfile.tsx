@@ -71,7 +71,7 @@ const MyProfile = () => {
     // },
   ]);
 
-  const [actor, setActor] = useState<string>(""); 
+  const [actor, setActor] = useState<string>("");
 
   const fetchData = async () => {
     const response = await axios.get(
@@ -88,7 +88,7 @@ const MyProfile = () => {
     } catch {
       console.error("Error fetching posts");
     }
-    
+
 
     const response3 = await axios.post(
       `${rootURL}/getLinkedActor`, { linked_nconst: response.data.result.linked_nconst }
@@ -115,43 +115,43 @@ const MyProfile = () => {
   };
 
   return (
-    
+
     <div className="w-screen h-screen flex">
       <Sidebar />
       <div className="profile-container">
         <div className="content">
-        <div className="profile-top">
-          <div className="profile-picture">
-            <img
-              src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
-              alt="Profile"
-            />
-          </div>
-          <div className="profile-info">
-            <h2>@{profile.username}</h2>
-            <p>
-              {profile.first_name} {profile.last_name} is now linked to {actor}!
-            </p>
-            <div className="profile-buttons">
-              <button onClick={toggleFriends} className="btn btn-success">
-                Friends
-              </button>
-              <button onClick={toggleRecommendations} className="btn btn-success">
-                Recommendations
-              </button>
-              <button className="btn btn-success" onClick={() => navigate("/" + username + "/settings")}>Edit Profile</button>
-              {showPop && <ListPopup
-                show={showPop}
-                handleClose={toggleFriends}
-                isFriends={isFriends}
-                activeUser={username ? username : profile.username}
-              />}
+          <div className="profile-top">
+            <div className="profile-picture">
+              <img
+                src={profile.selfie ? profile.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"}
+                alt="Profile"
+              />
+            </div>
+            <div className="profile-info">
+              <h2>@{profile.username}</h2>
+              <p>
+                {profile.first_name} {profile.last_name} is linked to {actor}!
+              </p>
+              <div className="profile-buttons">
+                <button onClick={toggleFriends} className="btn btn-success">
+                  Friends
+                </button>
+                <button onClick={toggleRecommendations} className="btn btn-success">
+                  Recommendations
+                </button>
+                <button className="btn btn-success" onClick={() => navigate("/" + username + "/settings")}>Edit Profile</button>
+                {showPop && <ListPopup
+                  show={showPop}
+                  handleClose={toggleFriends}
+                  isFriends={isFriends}
+                  activeUser={username ? username : profile.username}
+                />}
+              </div>
             </div>
           </div>
-        </div>
-        <div>
-          <PostProfileHandler posts={posts} />
-        </div>
+          <div>
+            <PostProfileHandler posts={posts} />
+          </div>
         </div>
       </div>
     </div>

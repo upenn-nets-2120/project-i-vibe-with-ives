@@ -100,7 +100,6 @@ const Actor: React.FC = () => {
             await axios.post(`${rootURL}/` + username + `/setActor`, { actor: actor.linked_nconst });
             console.log(`Actor ${actor.linked_nconst} set successfully.`);
             setShowActorPopup(false);
-            navigate("/" + username + "/home");
         } catch (error) {
             console.error("Error setting actor:", error);
         }
@@ -141,6 +140,7 @@ const Actor: React.FC = () => {
                     </div>
                 ))}
             </div>
+            <button className="mt-4 px-4 py-2 bg-red-500 text-white rounded" onClick={() => navigate("/" + username + "/home")}>Done</button>
         </div>
     );
 };

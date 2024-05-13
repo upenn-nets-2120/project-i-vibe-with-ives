@@ -78,7 +78,7 @@ export default function Chats() {
         try {
             await axios.post(`http://localhost:8080/createChat`, {
                 people: [username],
-                name: 'new chat created by ' + username,
+                name: 'nets demo chat',
             });
             alert('New Chat Created!');
             fetchChats(); // Refresh chats after creating a new chat

@@ -25,7 +25,7 @@ export default function Home() {
     try {
       const response = await axios.get(`${rootURL}/${username}/feed`);
       setPosts(response.data.results); // assuming the data is in the results field
-      setRenderPosts(response.data.results.slice(0, Math.min(pages * 10, response.data.results.length))); 
+      setRenderPosts(response.data.results.slice(0, Math.min(pages * 10, response.data.results.length)));
     } catch (error) {
       alert("Failed to fetch posts");
       console.error("Failed to fetch posts:", error);
@@ -45,13 +45,13 @@ export default function Home() {
       const scrollTop = document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight;
-      console.log(scrollTop)
+      // console.log(scrollTop)
       if (scrollTop + windowHeight >= documentHeight - 100) {
         // If scrolled to bottom, load more data
         setPages(pages + 1);
       }
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -95,10 +95,10 @@ export default function Home() {
             />
           ))}
         </div>
-        
+
         <div className="sidebar-right">
           <button onClick={toggleCreate} className="create-post-button btn btn-primary">
-                  Create Post
+            Create Post
           </button>
           {showPop && <CreatePostComponent show={showPop} handleClose={toggleCreate} updatePosts={fetchData} />}
           <FriendRecsComponent />

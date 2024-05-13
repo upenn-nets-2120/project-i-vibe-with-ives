@@ -130,39 +130,59 @@ var getActors = async function (req, res) {
         console.info("Looking for files");
         const promises = [];
         // Loop through all the files in the images directory
-        fs.readdir("/nets2120/nets-project/basic-face-match/images", function (err, files) {
+        fs.readdir("/nets2120/nets-project/basic-face-match/images", async function (err, files) {
             if (err) {
                 console.error("Could not list the directory.", err);
                 process.exit(1);
             }
 
-            files.forEach(function (file, index) {
-                promises.push(indexAllFaces(path.join("/nets2120/nets-project/basic-face-match/images", file), file, collection));
-            });
+            // files.forEach(function (file, index) {
+            //     promises.push(indexAllFaces(path.join("/nets2120/nets-project/basic-face-match/images", file), file, collection));
+            // });
 
-            Promise.all(promises)
-                .then(async (results) => {
-                    console.info("All images indexed.");
-
-                    const matches = await findTopKMatches(collection, img, 5);
-                    const processedMatches = matches.map(match => {
-                        return match.ids[0].map(id => {
-                            const linked_nconst = id.split(".")[0]; // This assumes the id format is like "nm0002001.jpg-1"
-                            return {
-                                linked_nconst,
-                                img: id.split("-")[0] // Assuming the full path needs the original filename
-                            };
-                        });
+            try {
+                const matches = await findTopKMatches(collection, img, 5);
+                const processedMatches = matches.map(match => {
+                    return match.ids[0].map(id => {
+                        const linked_nconst = id.split(".")[0]; // This assumes the id format is like "nm0002001.jpg-1"
+                        return {
+                            linked_nconst,
+                            img: id.split("-")[0] // Assuming the full path needs the original filename
+                        };
                     });
-                    console.log(processedMatches[0])
-                    res.status(200).json({ actors: processedMatches[0] });
-                    return;
-                })
-                .catch((err) => {
-                    console.error("Error indexing images:", err);
-                    res.status(500).send('Error indexing images.');
-                    return;
                 });
+                console.log(processedMatches[0])
+                res.status(200).json({ actors: processedMatches[0] });
+                return;
+
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error processing image.');
+                return;
+            }
+            // Promise.all(promises)
+            //     .then(async (results) => {
+            //         console.info("All images indexed.");
+
+            //         const matches = await findTopKMatches(collection, img, 5);
+            //         const processedMatches = matches.map(match => {
+            //             return match.ids[0].map(id => {
+            //                 const linked_nconst = id.split(".")[0]; // This assumes the id format is like "nm0002001.jpg-1"
+            //                 return {
+            //                     linked_nconst,
+            //                     img: id.split("-")[0] // Assuming the full path needs the original filename
+            //                 };
+            //             });
+            //         });
+            //         console.log(processedMatches[0])
+            //         res.status(200).json({ actors: processedMatches[0] });
+            //         return;
+            //     })
+            //     .catch((err) => {
+            //         console.error("Error indexing images:", err);
+            //         res.status(500).send('Error indexing images.');
+            //         return;
+            //     });
         });
     } catch (error) {
         console.error(error);

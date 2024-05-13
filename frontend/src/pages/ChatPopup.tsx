@@ -55,7 +55,7 @@ const ChatPopup = ({
                 username: username,
                 invitee: friend,
             });
-            alert('Invite sent to' + friend + '!');
+            alert('Invite sent to ' + friend + '!');
         } catch (error) {
             console.error("Error Inviting Friend:", error);
         }

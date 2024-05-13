@@ -154,7 +154,7 @@ var getProfilePhoto = async function (req, res) {
 var createPost = async function (req, res) {
   // TODO: add to posts table
   console.log("creating post with")
-  console.log(req)
+  // console.log(req)
   const username = req.params.username;
   const caption = req.body.caption;
   const imageUrl = req.file;
@@ -177,7 +177,9 @@ var createPost = async function (req, res) {
   try {
     // get user_id of user with username username
     const search = `SELECT user_id FROM users WHERE username = '${username}';`;
+    console.log("searching");
     const answer = await db.send_sql(search);
+    console.log("PP");
     if (answer.length == 0) {
       res.status(500).json({ error: "Error finding user." });
       return;
@@ -185,14 +187,17 @@ var createPost = async function (req, res) {
       req.session.user_id = answer[0].user_id;
     }
     let insert;
-
+    console.log("TTT");
     if (caption) {
       insert = `INSERT INTO posts (caption, author_id) VALUES ('${caption}', ${req.session.user_id});`;
     } else {
       insert = `INSERT INTO posts (author_id) VALUES (${req.session.user_id});`;
     }
+    console.log("About");
     const result = await db.send_sql(insert);
+    console.log("B");
     const post_id = result.insertId.toString();
+    console.log("post_id is" + post_id);
 
     if (imageUrl) {
       uploadImageFileToS3(
@@ -215,6 +220,7 @@ var createPost = async function (req, res) {
     }
     res.status(201).json({ message: "Post uploaded!" });
   } catch (err) {
+    console.log("error" + err);
     res.status(500).json({ error: "Error querying database." + err });
   }
 };
@@ -225,10 +231,10 @@ var getFeed = async function (req, res) {
   // get all posts from users that the current user follows and their own posts
   const username = req.params.username;
   // req.session.username = username;
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   // get user_id of user with username username
   const initSearch = `SELECT user_id FROM users WHERE username = '${username}';`;
@@ -260,7 +266,20 @@ LEFT JOIN users u ON p.author_id = u.user_id AND po.post_id IS NOT NULL
 WHERE source = ${req.session.user_id} AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
 
   try {
-    const result = await db.send_sql(getPosts);
+    let result = await db.send_sql(getPosts);
+
+    if (result.length == 0) {
+      const getPosts2 = `
+      SELECT DISTINCT r.source, r.score, po.post_id, p.author_id AS post_author, u.username, p.caption, p.time, p.image, tw.id, t.author_id, t.text
+      FROM rankings r 
+      LEFT JOIN post_hashtags po ON po.hashtag = r.destination 
+      LEFT JOIN tweet_hashtags tw ON tw.hashtag = r.destination 
+      LEFT JOIN posts p ON po.post_id = p.post_id AND po.post_id IS NOT NULL
+      LEFT JOIN tweets t ON tw.id = t.id AND tw.id IS NOT NULL
+      LEFT JOIN users u ON p.author_id = u.user_id AND po.post_id IS NOT NULL
+      WHERE source = 2 AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
+      result = await db.send_sql(getPosts2);
+    }
 
     const formattedData = {
       results: result.map(item => {

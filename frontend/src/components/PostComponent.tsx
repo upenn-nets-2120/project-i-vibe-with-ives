@@ -3,14 +3,15 @@ import axios from 'axios';
 import config from '../../config.json';
 import { useNavigate, useParams } from "react-router-dom";
 import "./PostComponent.css";
-import {Post} from "../pages/MyProfile"
+import { Post } from "../pages/MyProfile"
 import PostPopup from "../pages/PostPopup";
 
 export default function PostComponent({
   id,  // Ensure that id is passed to each PostComponent
   user,
   caption,
-  imageUrl
+  imageUrl,
+  isSearch = false
 }) {
   const { username } = useParams();
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function PostComponent({
   const [post, setPost] = useState<Post | null>(null);
   const [selected, setSelected] = useState<boolean>(false);
   const [profilePhoto, setProfilePhoto] = useState<string>("");
-  const tweet= user === "twitteruser";
+  const tweet = user === "twitteruser";
 
 
   const rootURL = config.serverRootURL;
@@ -30,14 +31,14 @@ export default function PostComponent({
     const fetchLikes = async () => {
       try {
         try {
-          
+
           const likesResponse = await axios.get(`${rootURL}/${id}/getLikes`);
           setLikes(likesResponse.data);
-          
+
         } catch (error) {
           console.error('Failed to fetch likes:', error);
         }
-        
+
         try {
           const likedResponse = await axios.get(`${rootURL}/${id}/${username}/getLikedByUser`);
           setLiked(likedResponse.data);
@@ -45,7 +46,7 @@ export default function PostComponent({
         } catch (error) {
           console.error('Failed to fetch liked status:', error);
         }
-        
+
         try {
           const commentsResponse = await axios.get(`${rootURL}/${id}/getComments`);
           setComments(commentsResponse.data || []);  // Assuming `comments` is the field where comments are stored
@@ -54,9 +55,11 @@ export default function PostComponent({
           console.error('Failed to fetch comments:', error);
         }
 
+        let postResponse;
+
         try {
           if (tweet) {
-            const postResponse = await axios.get(
+            postResponse = await axios.get(
               `http://localhost:8080/${id}/getTweetById`
             );
             setPost(postResponse.data.result[0]);
@@ -73,10 +76,10 @@ export default function PostComponent({
 
         try {
 
-          const photoResponse = await axios.get(`${rootURL}/${user}/profilePhoto`)
+          const photoResponse = await axios.get(`${rootURL}/${isSearch ? post.username : user}/profilePhoto`)
           setProfilePhoto(photoResponse.data.imageUrl)
-        // console.log("setting profile pics")
-        // console.log(profilePhoto)
+          // console.log("setting profile pics")
+          // console.log(profilePhoto)
 
         } catch (err) {
           console.error('Failed to fetch profile photo:', err);
@@ -139,23 +142,23 @@ export default function PostComponent({
         <PostPopup onClick={() => setSelected(false)} sourcePost={post} />
       )}
       <div className='post-header'>
-        <img src={(profilePhoto || profilePhoto == "undefined") ? profilePhoto : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${user}'s profile`} className="profile-pic-poster"/>
-        <span className='username' onClick={() => navigate(`/${username}/${user}/userProfile`)}> <strong>@{user}:</strong> posted </span> 
-        
+        <img src={(profilePhoto || profilePhoto == "undefined") ? profilePhoto : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${user}'s profile`} className="profile-pic-poster" />
+        <span className='username' onClick={() => navigate(`/${username}/${isSearch ? post?.username : user}/userProfile`)}> <strong>@{isSearch ? post?.username : user}:</strong> posted </span>
+
       </div>
       {imageUrl && <img src={imageUrl} alt="Post image" className="post-image" />}
       <div className='caption'>{caption}</div>
       <div className='interactions'>
-        {liked ? 
-        (
-          <button className={`heart-icon`} onClick={() => handleLike()}>
-          ❤️
-        </button>
-        ) : (
-          <button className={`heart-icon`} onClick={() => handleLike()}>
-          🤍
-        </button>
-        )}
+        {liked ?
+          (
+            <button className={`heart-icon`} onClick={() => handleLike()}>
+              ❤️
+            </button>
+          ) : (
+            <button className={`heart-icon`} onClick={() => handleLike()}>
+              🤍
+            </button>
+          )}
         <span className='likes-count'> {likes} Likes</span>
       </div>
       <div className='comment-section'>
@@ -173,7 +176,7 @@ export default function PostComponent({
           <h3>Comments:</h3>
           {comments.slice(0, Math.min(comments.length, 2)).map(comment => (
             <div key={comment.comment_id} className="comment-home">
-              <img src={(comment.selfie || comment.selfie == "undefined") ? comment.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${comment.username}'s profile`} className="profile-pic-commenter"/>
+              <img src={(comment.selfie || comment.selfie == "undefined") ? comment.selfie : "https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg"} alt={`${comment.username}'s profile`} className="profile-pic-commenter" />
               <strong className='comment-username'>{comment.username}:</strong> {comment.caption}
             </div>
           ))}
