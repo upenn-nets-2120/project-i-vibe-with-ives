@@ -23,12 +23,12 @@ const Actor: React.FC = () => {
     const rootURL = config.serverRootURL;
     const { username } = useParams();
     const navigate = useNavigate();
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const file = e.target.files[0];
-            setUploadedImage(file);
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (uploadedImage) {
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("file", uploadedImage);
 
             try {
                 await axios.post(`${rootURL}/${username}/uploadProfilePhoto`, formData, {
@@ -45,7 +45,6 @@ const Actor: React.FC = () => {
                 // Assuming the response data contains a list of actors
                 setActorOptions(response.data.actors);
                 setShowActorPopup(true);
-
             } catch (error) {
                 console.error("Error uploading image and fetching actors:", error);
             }
@@ -65,15 +64,24 @@ const Actor: React.FC = () => {
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <label htmlFor="uploadedImage" className="font-semibold mb-2">
-                Upload Profile Picture (required)
-            </label>
-            <input
-                id="uploadedImage"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-            />
+            <form onSubmit={handleSubmit} className="w-full max-w-md">
+                <label htmlFor="uploadedImage" className="font-semibold mb-2">
+                    Upload Profile Picture (required)
+                </label>
+                <input
+                    id="uploadedImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => e.target.files && setUploadedImage(e.target.files[0])}
+                    className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                />
+                <button type="submit" className="mt-4 px-4 py-2 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600">Upload</button>
+            </form>
             {showActorPopup && (
                 <ActorPopup options={actorOptions} onSelect={handleSelectActor} onClose={() => setShowActorPopup(false)} />
             )}
@@ -100,5 +108,3 @@ const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) =
 };
 
 export default Actor;
-
-

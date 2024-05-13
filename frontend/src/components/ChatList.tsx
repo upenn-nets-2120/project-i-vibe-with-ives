@@ -13,7 +13,7 @@ interface ChatListProps {
 function ChatList({ chats, onSelectChat }: ChatListProps) {
     return (
         <div className="w-64 overflow-y-auto bg-gray-100 border-r">
-            {chats.map(chat => (
+            {chats && chats.length > 0 ? (chats.map(chat => (
                 <div
                     key={chat.id}
                     onClick={() => onSelectChat(chat)}
@@ -21,7 +21,7 @@ function ChatList({ chats, onSelectChat }: ChatListProps) {
                 >
                     {chat.name}
                 </div>
-            ))}
+            ))) : (<p className="text-center text-gray-500">No chats available</p>)}
         </div>
     );
 }
