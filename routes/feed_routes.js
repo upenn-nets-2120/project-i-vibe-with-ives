@@ -112,7 +112,8 @@ async function uploadImageFileToS3(filePath, s3Bucket, s3Key) {
 
 var uploadProfilePhoto = async function (req, res) {
   const imgName = req.file;
-  const username = req.params.username;
+  const username = 'twitteruser';
+  // const username = req.params.username;
   //   const imgName = "frontend/golden-retriever-personality-1024x739.jpeg";
   uploadImageFileToS3(imgName.path, "pennstagram-pics-i-vibe-with-ives", username)
     .then(() => {
@@ -254,8 +255,8 @@ var getFeed = async function (req, res) {
     res.status(500).json({ error: "Error querying database." });
     return;
   }
-
-  const getPosts = `
+  let sourceId = req.session.user_id;
+  const getPosts = (source) => `
 SELECT DISTINCT r.source, r.score, po.post_id, p.author_id AS post_author, u.username, p.caption, p.time, p.image, tw.id, t.author_id, t.text
 FROM rankings r 
 LEFT JOIN post_hashtags po ON po.hashtag = r.destination 
@@ -263,7 +264,7 @@ LEFT JOIN tweet_hashtags tw ON tw.hashtag = r.destination
 LEFT JOIN posts p ON po.post_id = p.post_id AND po.post_id IS NOT NULL
 LEFT JOIN tweets t ON tw.id = t.id AND tw.id IS NOT NULL
 LEFT JOIN users u ON p.author_id = u.user_id AND po.post_id IS NOT NULL
-WHERE source = ${req.session.user_id} AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
+WHERE source = ${source} AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
 
   try {
     let result = await db.send_sql(getPosts);
@@ -299,7 +300,7 @@ WHERE source = ${req.session.user_id} AND destination REGEXP '^[^0-9]+$' ORDER B
             post_id: item.id,
             author: item.author_id,
             username: 'twitteruser',
-            caption: item.text
+            caption: item.text,
           };
         }
       }).filter(x => x !== undefined),
