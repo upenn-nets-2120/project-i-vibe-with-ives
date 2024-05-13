@@ -250,7 +250,7 @@ var getFeed = async function (req, res) {
   }
 
   const getPosts = `
-SELECT r.source, r.score, po.post_id, p.author_id AS post_author, u.username, p.caption, p.time, p.image, tw.id, t.author_id, t.text
+SELECT DISTINCT r.source, r.score, po.post_id, p.author_id AS post_author, u.username, p.caption, p.time, p.image, tw.id, t.author_id, t.text
 FROM rankings r 
 LEFT JOIN post_hashtags po ON po.hashtag = r.destination 
 LEFT JOIN tweet_hashtags tw ON tw.hashtag = r.destination 
