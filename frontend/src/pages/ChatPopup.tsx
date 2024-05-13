@@ -1,5 +1,5 @@
 import React from "react";
-import "./ListPopup.css";
+import "./ChatPopup.css";
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
@@ -19,14 +19,16 @@ const ChatPopup = ({
     show,
     isFriends,
     activeUser,
+    currentChat,
 }: {
     handleClose: () => void;
     show: boolean;
     isFriends: boolean;
     activeUser: string;
+    currentChat: string;
 }) => {
     const [friends, setFriends] = useState<Friend[]>([]);
-    const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+    const { username } = useParams();
     const fetchData = async () => {
         try {
             const response = await axios.get(
@@ -36,20 +38,8 @@ const ChatPopup = ({
             // console.log(response.data.results);
             setFriends(response.data.results);
 
-            const response2 = await axios.get(
-                `http://localhost:8080/${activeUser}/recommendations`
-            );
-
-            // console.log(response2.data.results);
-            setRecommendations(response2.data.results);
         } catch (error) {
             setFriends([{ friend_username: "Error fetching friends" }]);
-            setRecommendations([
-                {
-                    user_id: 0,
-                    username: "Error fetching recommendations",
-                },
-            ]);
         }
     };
 
@@ -57,9 +47,18 @@ const ChatPopup = ({
         fetchData();
     }, []);
 
-    const startChat = (username: string) => {
-        console.log("Starting chat with:", username);
-        // Implement functionality to navigate to the chat or open chat window here
+    const handleInvite = async (friend: string) => {
+        console.log(currentChat, friend, username);
+        try {
+            await axios.post(`http://localhost:8080/${username}/inviteMember`, {
+                chat_name: currentChat,
+                username: username,
+                invitee: friend,
+            });
+            alert('Invite sent to' + friend + '!');
+        } catch (error) {
+            console.error("Error Inviting Friend:", error);
+        }
     };
 
     const showHideClassName = show ? "popup display-block" : "popup display-none";
@@ -67,24 +66,21 @@ const ChatPopup = ({
     return (
         <div className={showHideClassName}>
             <section className="popup-main">
+                <h1>Invite Friends to: {currentChat}</h1>
                 {isFriends ? (
                     friends.length > 0 ? (
                         friends.map((friend) => (
                             <div key={friend.friend_username} className="friend-entry">
                                 <h3>{friend.friend_username}</h3>
-                                <button className="chat-button" onClick={() => startChat(friend.friend_username)}>
+                                <button className="chat-button" onClick={() => handleInvite(friend.friend_username)}>
                                     <i className="fas fa-comments"></i>
                                 </button>
                             </div>))
                     ) : (
-                        <p>No friends to display.</p>
+                        <p>Add some friends to chat with them!.</p>
                     )
                 ) : (
-                    recommendations.length > 0 ? (
-                        recommendations.map((rec) => <h3 key={rec.user_id}>{rec.username}</h3>)
-                    ) : (
-                        <p>No recommendations to display.</p>
-                    )
+                    <p>Add some friends to chat with them!.</p>
                 )}
 
                 <button className="btn btn-success" onClick={handleClose}>

@@ -28,14 +28,6 @@ export default function Chats() {
     const [chats, setChats] = useState<Chat[]>([]);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    const [isCreatingChat, setIsCreatingChat] = useState(false);
-    const [showPop, setShowPop] = useState<boolean>(false);
-    const [isFriends, setIsFriends] = useState<boolean>(false);
-
-    const toggleFriends = () => {
-        setShowPop(!showPop);
-        setIsFriends(true);
-    };
 
     const fetchChats = async () => {
         try {
@@ -82,23 +74,30 @@ export default function Chats() {
         }
     };
 
-    const handleCreateChat = () => {
-        // Implement logic to handle creating a new chat
-        console.log('Creating new chat...');
-        setIsCreatingChat(true);
-        // Additional logic to actually create the chat would go here
+    const handleCreateChat = async () => {
+        try {
+            await axios.post(`http://localhost:8080/createChat`, {
+                people: [username],
+                name: 'new chat created by ' + username,
+            });
+            alert('New Chat Created!');
+            fetchChats(); // Refresh chats after creating a new chat
+        } catch (error) {
+            console.error("Error creating chat:", error);
+        }
     };
+
 
     return (
         <div className="w-screen h-screen flex">
             <Sidebar />
             <div className="flex flex-col">
-                <button onClick={toggleFriends} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <button onClick={handleCreateChat} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                     Create Chat
                 </button>
                 <ChatList chats={chats} onSelectChat={setSelectedChat} />
             </div>
-            {selectedChat && (
+            {selectedChat ? (
                 <ChatDisplay
                     chat={selectedChat}
                     messages={messages}
@@ -107,13 +106,8 @@ export default function Chats() {
                     setSelectedChat={setSelectedChat}
                     currentUser={username}  // Pass the sendMessage function to ChatDisplay
                 />
-            )}
-            {showPop && <ChatPopup
-                show={showPop}
-                handleClose={toggleFriends}
-                isFriends={isFriends}
-                activeUser={username ? username : ''}
-            />}
+            ) : (<p className="flex-1 bg-gray-200 text-center text-2xl font-bold text-gray-500">Select a chat to start messaging</p>)}
+
         </div>
     );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ListPopup from "../pages/ListPopup";
+import ChatPopup from "../pages/ChatPopup";
 import axios from 'axios';
 import { useParams } from "react-router-dom";
 import config from '../../config.json';
@@ -34,11 +34,9 @@ const MessageComponent = ({
     currentUser: string | undefined;
 }) => {
     return (
-        <div className={`w-full flex ${sender == currentUser ? "justify-end" : "justify-start"}`}>
-            <div
-                className={`text-left max-w-[70%] p-3 rounded-md break-words ${sender == currentUser ? "bg-blue-100" : "bg-slate-200"
-                    }`}
-            >
+        <div className={`w-full flex ${sender === currentUser ? "justify-end" : "justify-start"}`}>
+            <div className={`text-left max-w-[70%] p-3 rounded-md break-words ${sender === currentUser ? "bg-blue-100" : "bg-slate-200"}`}>
+                <div className="text-xs text-black font-light mb-1">{sender}</div>
                 {message}
             </div>
         </div>
@@ -52,7 +50,7 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
     const rootURL = config.serverRootURL;
     const { username } = useParams();
 
-    const toggleFriends = () => {
+    const togglePop = () => {
         setShowPop(!showPop);
         setIsFriends(true);
     };
@@ -93,7 +91,7 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
             <div className="flex justify-between items-center p-4 bg-blue-500 text-white text-lg">
                 <span>{chat.name}</span>
                 <div>
-                    <button onClick={toggleFriends} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2">
+                    <button onClick={togglePop} className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2">
                         Invite Friends
                     </button>
                     <button onClick={handleLeave} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
@@ -123,11 +121,12 @@ const ChatDisplay: React.FC<ChatDisplayProps> = ({ chat, messages, onSendMessage
                         Send
                     </button>
                 </div>
-                {showPop && <ListPopup
+                {showPop && <ChatPopup
                     show={showPop}
-                    handleClose={toggleFriends}
+                    handleClose={togglePop}
                     isFriends={isFriends}
-                    activeUser={currentUser ? currentUser : ''}
+                    activeUser={username ? username : ''}
+                    currentChat={chat ? chat.name : ''}
                 />}
             </div>
         </div>

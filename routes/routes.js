@@ -28,6 +28,7 @@ const helper = require("../routes/route_helper.js");
 const e = require("cors");
 const { fromIni } = require("@aws-sdk/credential-provider-ini");
 const { S3Client, GetObjectCommand, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { group } = require("console");
 const fs = require('fs').promises;
 // // Face Matching imports from app.js
 // const { initializeFaceModels, findTopKMatches, client } = require('../basic-face-match/app');
@@ -381,20 +382,21 @@ var getFriendRecs = async function (req, res) {
 
 var create_chat = async function (req, res) {
   const people = req.body.people;
-  const name = req.body.name;
+  let name = req.body.name;
 
   const search = `SELECT * FROM \`groups\` WHERE group_name = "${name}";`;
   const result = await db.send_sql(search);
   if (result.length > 0) {
-    res.status(409).json({ error: "Chat with this name already exists." });
-    return;
+    name = name + ' (' + result.length + ')';
   }
   try {
+    console.log(name);
     const insert = `INSERT INTO \`groups\` (group_name) VALUES ('${name}');`;
     const result2 = await db.insert_items(insert);
-
     const group_id_result = await db.send_sql(search);
+    console.log(group_id_result);
     const group_id = group_id_result[0].group_id;
+    console.log(group_id);
 
     const user_ids_query = `SELECT user_id FROM users WHERE username IN (${people
       .map((person) => `'${person}'`)
@@ -410,6 +412,7 @@ var create_chat = async function (req, res) {
       });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Error querying database." });
     return;
   }
