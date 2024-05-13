@@ -43,7 +43,8 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
                         Config.DATABASE_PASSWORD);
             } catch (SQLException e) {
                 logger.error("Connection to database failed: " + e.getMessage(), e);
-                logger.error("Please make sure the RDS server is correct, the tunnel is enabled, and you have run the mysql command to create the database.");
+                logger.error(
+                        "Please make sure the RDS server is correct, the tunnel is enabled, and you have run the mysql command to create the database.");
                 System.exit(1);
             }
 
@@ -230,7 +231,6 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
         }
     }
 
-
     /**
      * Main functionality in the program: read and process the social network
      * Runs the SocialRank algorithm to compute the ranks of nodes in a social
@@ -245,7 +245,7 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
      */
     public List<Tuple2<Tuple2<String, String>, Double>> run(boolean debug) throws IOException, InterruptedException {
         getConnection();
-       
+
         // Load the social network, aka. the edges (followed, follower)
         JavaPairRDD<String, String> friendsRDD = getFriends();
         JavaPairRDD<String, String> postsUsersRDD = getPostsUsers();
@@ -253,27 +253,24 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
         JavaPairRDD<String, String> usersHashtagsRDD = getUsersHashtags();
         JavaPairRDD<String, String> kafkaHashtagsRDD = getKafkaHashtags();
 
-
         JavaRDD<String> friendNodeRDD = friendsRDD.flatMap(x -> Arrays.asList(x._1, x._2).iterator()).distinct();
-
 
         JavaRDD<String> postNodeRDD = postsUsersRDD.flatMap(x -> Arrays.asList(x._1, x._2).iterator()).distinct();
         JavaRDD<String> hashtagNodeRDD = postsHashtagsRDD.flatMap(x -> Arrays.asList(x._1, x._2).iterator()).distinct();
         JavaRDD<String> userNodeRDD = usersHashtagsRDD.flatMap(x -> Arrays.asList(x._1, x._2).iterator()).distinct();
         JavaRDD<String> kafkaNodeRDD = kafkaHashtagsRDD.flatMap(x -> Arrays.asList(x._1, x._2).iterator()).distinct();
 
-        JavaRDD<String> nodeRDD = friendNodeRDD.union(postNodeRDD).union(hashtagNodeRDD).union(userNodeRDD).union(kafkaNodeRDD).distinct();
+        JavaRDD<String> nodeRDD = friendNodeRDD.union(postNodeRDD).union(hashtagNodeRDD).union(userNodeRDD)
+                .union(kafkaNodeRDD).distinct();
         nodeRDD.foreach(node -> {
             logger.info("Node: " + node);
         });
-       
-
 
         JavaPairRDD<String, String> edgeRDD = friendsRDD.union(postsUsersRDD).union(postsHashtagsRDD)
                 .union(usersHashtagsRDD).union(kafkaHashtagsRDD).distinct();
         // edgeRDD.foreach(node -> {
-        //     // Logging each node to the console using Log4j
-        //     logger.info("Key: " + node._1() + ", Value: " + node._2());
+        // // Logging each node to the console using Log4j
+        // logger.info("Key: " + node._1() + ", Value: " + node._2());
         // });
         JavaPairRDD<String, String> userPairs = friendNodeRDD.cartesian(nodeRDD);
         userPairs.foreach(node -> {
@@ -285,22 +282,26 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
         JavaPairRDD<Tuple2<String, String>, String> withEdges = friendNodeRDD.cartesian(edgeRDD)
                 .mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1, x._2._1), x._2._2));
 
-        JavaPairRDD<Tuple2<String, String>, Double> socialRankRDD = tuples.mapToPair(x -> new Tuple2<>(x, x._1.equals(x._2) ? 1.0 : 0.0));
-        JavaRDD<Tuple2<String, Integer>> neighborCounts= edgeRDD.mapToPair(x -> new Tuple2<>(x._1, 1))
+        JavaPairRDD<Tuple2<String, String>, Double> socialRankRDD = tuples
+                .mapToPair(x -> new Tuple2<>(x, x._1.equals(x._2) ? 1.0 : 0.0));
+        JavaRDD<Tuple2<String, Integer>> neighborCounts = edgeRDD.mapToPair(x -> new Tuple2<>(x._1, 1))
                 .reduceByKey((x, y) -> x + y).map(x -> x);
         JavaPairRDD<Tuple2<String, String>, Integer> neighborCountsEdges = friendNodeRDD.cartesian(neighborCounts)
-            .mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1, x._2._1), x._2._2));
+                .mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1, x._2._1), x._2._2));
         double decayFactor = 0.15;
         for (int i = 0; i < i_max; i++) {
             JavaPairRDD<Tuple2<String, String>, Double> values = socialRankRDD.join(neighborCountsEdges)
                     .mapToPair(x -> new Tuple2<>(x._1, x._2._2 == 0 ? 0 : x._2._1 / x._2._2));
 
             JavaPairRDD<Tuple2<String, String>, Tuple2<String, Double>> withValues = withEdges.join(values);
-            JavaPairRDD<Tuple2<String, String>, Double> newValues = withValues.mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1._1, x._2._1), x._2._2));
-            JavaPairRDD<Tuple2<String, String>, Double> check = tuples.mapToPair(x -> new Tuple2<>(x, x._1.equals(x._2) ? 1.0 : 0.0));
+            JavaPairRDD<Tuple2<String, String>, Double> newValues = withValues
+                    .mapToPair(x -> new Tuple2<>(new Tuple2<>(x._1._1, x._2._1), x._2._2));
+            JavaPairRDD<Tuple2<String, String>, Double> check = tuples
+                    .mapToPair(x -> new Tuple2<>(x, x._1.equals(x._2) ? 1.0 : 0.0));
             JavaPairRDD<Tuple2<String, String>, Double> finalRDD = newValues.union(check);
             JavaPairRDD<Tuple2<String, String>, Double> total = finalRDD.reduceByKey((x, y) -> x + y);
-            JavaPairRDD<Tuple2<String, String>, Double> newSocialRankRDD = total.mapValues(x -> decayFactor + (1 - decayFactor) * x);
+            JavaPairRDD<Tuple2<String, String>, Double> newSocialRankRDD = total
+                    .mapValues(x -> decayFactor + (1 - decayFactor) * x);
             double largestChange = socialRankRDD.join(newSocialRankRDD).mapToDouble(x -> Math.abs(x._2._1 - x._2._2))
                     .max();
             socialRankRDD = newSocialRankRDD;
@@ -323,9 +324,9 @@ public class FeedAdsorption extends SparkJob<List<Tuple2<Tuple2<String, String>,
             while (true) {
                 ranks.initialize();
                 ranks.run(true);
-                Thread.sleep(86400000);
+                Thread.sleep(10000);
             }
-            
+
         } catch (final IOException ie) {
             logger.error("IO error occurred: " + ie.getMessage(), ie);
         } catch (final InterruptedException e) {

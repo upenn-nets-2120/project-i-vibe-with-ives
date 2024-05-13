@@ -48,5 +48,8 @@ const sidebarStyle = {
     backgroundColor: "#000",
     // height: "100%",
     padding: "10px 0",
-    boxShadow: "2px 0 5px rgba(0,0,0,0.1)"
+    boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+    height: "100vh",
+    position: "sticky",
+    top: 0
 };

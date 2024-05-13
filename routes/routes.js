@@ -722,10 +722,10 @@ var post_add_hashtag = async function (req, res) {
   const username = req.body.username;
   const hashtag = req.body.hashtag;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);
@@ -753,10 +753,10 @@ var post_remove_hashtag = async function (req, res) {
   const username = req.body.username;
   const hashtag = req.body.hashtag;
 
-  if (helper.isLoggedIn(req, username) == false) {
-    res.status(403).json({ error: "Not logged in." });
-    return;
-  }
+  // if (helper.isLoggedIn(req, username) == false) {
+  //   res.status(403).json({ error: "Not logged in." });
+  //   return;
+  // }
 
   const search = `SELECT user_id FROM users WHERE username = '${username}';`;
   const result = await db.send_sql(search);

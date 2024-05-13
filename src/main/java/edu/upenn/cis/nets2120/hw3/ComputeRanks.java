@@ -81,7 +81,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     }
 
     /**
-     * Fetch the social network from friends table, and create a (user1_id, user2_id)
+     * Fetch the social network from friends table, and create a (user1_id,
+     * user2_id)
      * edge graph
      *
      * @param filePath
@@ -97,7 +98,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                         Config.DATABASE_PASSWORD);
             } catch (SQLException e) {
                 logger.error("Connection to database failed: " + e.getMessage(), e);
-                logger.error("Please make sure the RDS server is correct, the tunnel is enabled, and you have run the mysql command to create the database.");
+                logger.error(
+                        "Please make sure the RDS server is correct, the tunnel is enabled, and you have run the mysql command to create the database.");
                 System.exit(1);
             }
 
@@ -109,7 +111,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
             logger.info("Successfully connected to database!");
 
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT DISTINCT user1_id, user2_id FROM friends ORDER BY user1_id ASC;");
+            ResultSet resultSet = statement
+                    .executeQuery("SELECT DISTINCT user1_id, user2_id FROM friends ORDER BY user1_id ASC;");
             List<Tuple2<String, String>> data = new ArrayList<>();
             while (resultSet.next()) {
                 // add bidirectional edges for each friend pairing
@@ -137,7 +140,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         // TODO Find the sinks in the provided graph
         JavaPairRDD<String, String> reversed = network.mapToPair(Tuple2::swap);
 
-        //subtract first column of reversed with first column of network and store in JavaRDD
+        // subtract first column of reversed with first column of network and store in
+        // JavaRDD
         JavaRDD<String> sinks = network.keys().subtract(reversed.keys()).distinct();
         return sinks;
     }
@@ -145,38 +149,46 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
     /**
      * Friend-of-a-Friend Recommendation Algorithm
      *
-     * @param network JavaPairRDD: (followed: String, follower: String) The social network
-     * @return JavaPairRDD: ((person, recommendation), strength) The friend-of-a-friend recommendations
+     * @param network JavaPairRDD: (followed: String, follower: String) The social
+     *                network
+     * @return JavaPairRDD: ((person, recommendation), strength) The
+     *         friend-of-a-friend recommendations
      */
     private JavaPairRDD<Tuple2<String, String>, Integer> friendOfAFriendRecommendations(
             JavaPairRDD<String, String> network) {
-        // TODO: Generate friend-of-a-friend recommendations by computing the set of 2nd-degree followed users. This
-        //  method should do the same thing as the `friendOfAFriendRecommendations` method in the
-        //  `FriendsOfFriendsStreams` class, but using Spark's RDDs instead of Java Streams.
+        // TODO: Generate friend-of-a-friend recommendations by computing the set of
+        // 2nd-degree followed users. This
+        // method should do the same thing as the `friendOfAFriendRecommendations`
+        // method in the
+        // `FriendsOfFriendsStreams` class, but using Spark's RDDs instead of Java
+        // Streams.
 
         JavaPairRDD<String, String> reversed = network.mapToPair(Tuple2::swap);
         JavaPairRDD<String, Tuple2<String, String>> merged = network.join(reversed);
-        
+
         JavaPairRDD<String, String> filtered = merged.filter(pair -> !pair._2()._1().equals(pair._2()._2()))
-                                                      .mapToPair(pair -> new Tuple2<>(pair._2()._1(), pair._2()._2()));
-        
-        //filter out first degree connections
+                .mapToPair(pair -> new Tuple2<>(pair._2()._1(), pair._2()._2()));
+
+        // filter out first degree connections
         filtered = filtered.subtract(reversed);
-        
+
         JavaPairRDD<Tuple2<String, String>, Integer> finalRDD = filtered.mapToPair(pair -> new Tuple2<>(pair, 1))
-                                                                       .reduceByKey(Integer::sum);
-    
+                .reduceByKey(Integer::sum);
+
         return finalRDD;
-    
+
     }
 
     /**
      * Main functionality in the program: read and process the social network
-     * Runs the SocialRank algorithm to compute the ranks of nodes in a social network.
+     * Runs the SocialRank algorithm to compute the ranks of nodes in a social
+     * network.
      *
      * @param debug a boolean value indicating whether to enable debug mode
-     * @return a list of tuples containing the node ID and its corresponding SocialRank value
-     * @throws IOException          if there is an error reading the social network data
+     * @return a list of tuples containing the node ID and its corresponding
+     *         SocialRank value
+     * @throws IOException          if there is an error reading the social network
+     *                              data
      * @throws InterruptedException if the execution is interrupted
      */
     public List<Tuple2<String, Double>> run(boolean debug) throws IOException, InterruptedException {
@@ -184,27 +196,26 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         // Load the social network, aka. the edges (followed, follower)
         JavaPairRDD<String, String> edgeRDD = getSocialNetwork();
 
-
-
         // Find the sinks in edgeRDD as PairRDD
         JavaRDD<String> sinks = getSinks(edgeRDD);
-        logger.info("This graph contains {} nodes and {} edges", edgeRDD.keys().union(edgeRDD.values()).distinct().count(), edgeRDD.count());
+        logger.info("This graph contains {} nodes and {} edges",
+                edgeRDD.keys().union(edgeRDD.values()).distinct().count(), edgeRDD.count());
         logger.info("There are {} sinks", sinks.count());
 
-        //add backlinks
+        // add backlinks
         JavaPairRDD<String, Integer> dummy = sinks.mapToPair(sink -> new Tuple2<>(sink, 1));
         JavaPairRDD<String, String> toRemove = edgeRDD.subtractByKey(dummy);
         JavaPairRDD<String, String> sinkEdges = edgeRDD.subtractByKey(toRemove);
         JavaPairRDD<String, String> backlinks = sinkEdges.mapToPair(Tuple2::swap);
         logger.info("Added {} backlinks", backlinks.count());
 
-        //final edge table
+        // final edge table
         JavaPairRDD<String, String> graph = edgeRDD.union(backlinks).distinct();
         double decay = 0.15;
 
         // not adding backlinks for simple-example.txt
         // graph = edgeRDD.distinct();
-              
+
         JavaPairRDD<String, Double> ranks = graph.keys().distinct().mapToPair(node -> new Tuple2<>(node, 1.0));
         JavaPairRDD<String, Double> oldRanks = ranks;
         JavaPairRDD<String, Iterable<String>> groupedGraph = graph.mapToPair(Tuple2::swap).groupByKey();
@@ -223,7 +234,6 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 return list.iterator();
             });
 
-
             // use contributions from each node to update ranks
             ranks = contributions
                     .reduceByKey(Double::sum)
@@ -233,9 +243,9 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 List<Tuple2<String, Double>> rankCollect = ranks.collect();
                 for (Tuple2<String, Double> node : rankCollect) {
                     logger.info("Node: {}, Rank: {}", node._1(), node._2());
-                 }
+                }
             }
-            
+
             // compute max difference, check against d_max
             JavaPairRDD<String, Double> diff = ranks.join(oldRanks).mapValues(r -> Math.abs(r._1() - r._2()));
             Tuple2<String, Double> max = diff.reduce((a, b) -> {
@@ -246,13 +256,18 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 }
             });
 
-            if (max._2() < d_max) break;
+            if (max._2() < d_max)
+                break;
             oldRanks = ranks;
 
         }
 
-        //Output the top 1000 node IDs with the highest SocialRank values, as well as the SocialRank value of each. The output should consist of 1000 lines of the form x y, where x is a node ID and y is the socialRank of x; the lines should be ordered by SocialRank in descending order.
-        List<Tuple2<String, Double>> finalIdRanks = ranks.mapToPair(Tuple2::swap).sortByKey(false).mapToPair(Tuple2::swap).take(ranks.collect().size());
+        // Output the top 1000 node IDs with the highest SocialRank values, as well as
+        // the SocialRank value of each. The output should consist of 1000 lines of the
+        // form x y, where x is a node ID and y is the socialRank of x; the lines should
+        // be ordered by SocialRank in descending order.
+        List<Tuple2<String, Double>> finalIdRanks = ranks.mapToPair(Tuple2::swap).sortByKey(false)
+                .mapToPair(Tuple2::swap).take(ranks.collect().size());
 
         sendRankResultsToDatabase(finalIdRanks);
 
@@ -267,9 +282,9 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME,
                 Config.DATABASE_PASSWORD)) {
 
-
             try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS social_rank (user_id INT, social_rank FLOAT, FOREIGN KEY (user_id) REFERENCES users(user_id));");
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS social_rank (user_id INT, social_rank FLOAT, FOREIGN KEY (user_id) REFERENCES users(user_id));");
             }
 
             // delete from social rank
@@ -279,7 +294,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
             // TODO: Write your recommendations data back to imdbdatabase.
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-            // Iterate over recommendations and insert each one into the database
+                // Iterate over recommendations and insert each one into the database
                 for (Tuple2<String, Double> recommendation : recommendations) {
                     String user = recommendation._1();
                     double rank = recommendation._2();
@@ -302,7 +317,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
      * Send friend of a friend recommendations results back to the database
      *
      * @param recommendations List: (followed: String, follower: String)
-     *                        The list of recommendations to send back to the database
+     *                        The list of recommendations to send back to the
+     *                        database
      */
     public void sendFoafResultsToDatabase(List<Tuple2<Tuple2<String, String>, Integer>> recommendations) {
 
@@ -313,7 +329,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
             // create recommendations_2 table if it doesn't exist
             try (Statement statement = connection.createStatement()) {
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS recommendations (user_id INT, recommendation INT, strength INT, FOREIGN KEY (user_id) REFERENCES users(user_id), FOREIGN KEY (recommendation) REFERENCES users(user_id));");
+                statement.executeUpdate(
+                        "CREATE TABLE IF NOT EXISTS recommendations (user_id INT, recommendation INT, strength INT, FOREIGN KEY (user_id) REFERENCES users(user_id), FOREIGN KEY (recommendation) REFERENCES users(user_id));");
             }
 
             // clear old friend recommendations
@@ -323,7 +340,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
 
             // TODO: Write your recommendations data back to imdbdatabase.
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-            // Iterate over recommendations and insert each one into the database
+                // Iterate over recommendations and insert each one into the database
                 for (Tuple2<Tuple2<String, String>, Integer> recommendation : recommendations) {
                     String followed = recommendation._1()._1();
                     String follower = recommendation._1()._2();
@@ -368,7 +385,6 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
         logger.info("*** Finished friend of friend recommendations! ***");
     }
 
-
     /**
      * Graceful shutdown
      */
@@ -387,9 +403,9 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                 friendRecs.initialize();
                 friendRecs.runFoaf();
                 friendRecs.run(true);
-                Thread.sleep(86400000);
+                Thread.sleep(10000);
             }
-            
+
         } catch (final IOException ie) {
             logger.error("IO error occurred: " + ie.getMessage(), ie);
         } catch (final InterruptedException e) {
@@ -398,6 +414,5 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
             friendRecs.shutdown();
         }
     }
-
 
 }

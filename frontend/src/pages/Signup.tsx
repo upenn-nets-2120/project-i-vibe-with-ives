@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import config from "../../config.json";
@@ -17,9 +17,12 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [hashtags, setHashtags] = useState([]);
 
 
   const rootURL = config.serverRootURL;
+
+
 
   const handleSubmit = async () => {
     // TODO: make sure passwords match

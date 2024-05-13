@@ -28,6 +28,8 @@ function register_routes(app) {
   app.post("/register", actorRoutes.post_register);
   app.post("/:username/actors", upload.single("file"), actorRoutes.get_actors);
   app.post("/:username/setActor", actorRoutes.set_actor);
+  app.get("/topHashtags", actorRoutes.get_top_hashtags);
+
 
   app.get("/:username/friends", routes.get_friends);
   // app.get("/:username/recommendations", routes.get_friend_recs);

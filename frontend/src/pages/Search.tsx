@@ -84,7 +84,7 @@ export default function SearchAndChat() {
     };
 
     return (
-        <div className="w-screen h-screen flex">
+        <div className="w-100vh h-100vh flex">
             <Sidebar />
             <div className="flex-1 p-4">
                 <div className="bg-white p-4 rounded shadow-md mb-4">

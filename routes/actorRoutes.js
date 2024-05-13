@@ -91,6 +91,26 @@ var postRegister = async function (req, res) {
     }
 };
 
+var get_top_hashtags = async function (req, res) {
+    // get top hashtags
+    const query = "select post_hashtags.hashtag, count(*) as likes from post_hashtags join likes on likes.post_id=post_hashtags.post_id group by post_hashtags.hashtag union select user_hashtags.hashtag, count(*) as likes from user_hashtags group by hashtag limit 10;";
+    try {
+        const result = await db.send_sql(query);
+        const formattedData = {
+            results: result.map((item) => ({
+                hashtag: item.hashtag,
+                likes: item.likes,
+                selected: false
+            })),
+        };
+        res.status(200).json(formattedData);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Error querying database." });
+        return;
+    }
+};
+
 var getActors = async function (req, res) {
     console.log("getActors");
 
@@ -186,7 +206,8 @@ var get_user_id = async function (username) {
 var routes = {
     post_register: postRegister,
     get_actors: getActors,
-    set_actor: setActor
+    set_actor: setActor,
+    get_top_hashtags: get_top_hashtags,
 };
 
 module.exports = routes;

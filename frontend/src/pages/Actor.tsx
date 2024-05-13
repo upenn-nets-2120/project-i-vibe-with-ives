@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import config from "../../config.json";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Hash } from "react-router-dom";
+import { text } from "stream/consumers";
 
 axios.defaults.withCredentials = true;
 
@@ -16,13 +17,56 @@ interface ActorPopupProps {
     onClose: () => void;
 }
 
+interface Hashtag {
+    hashtag: string;
+    likes: number;
+    selected: boolean;
+}
+
 const Actor: React.FC = () => {
     const [uploadedImage, setUploadedImage] = useState<File | null>(null);
     const [showActorPopup, setShowActorPopup] = useState(false);
     const [actorOptions, setActorOptions] = useState<Actor[]>([]);
+    const [hashtags, setHashtags] = useState<Hashtag[]>([]);
     const rootURL = config.serverRootURL;
     const { username } = useParams();
     const navigate = useNavigate();
+
+    const fetchData = async () => { // Fetch hashtags
+        try {
+            const response = await axios.get(`${rootURL}/topHashtags`);
+            setHashtags(response.data.results);
+        } catch (error) {
+            alert("Failed to fetch hashtags");
+            console.error("Failed to fetch hashtags:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleHashtagClick = (hashtag: Hashtag) => {
+        console.log("Hashtag clicked:", hashtag);
+
+        if (hashtag.selected) {
+            try {
+                axios.post(`${rootURL}/${username}/removeHashtag`, { username: username, hashtag: hashtag.hashtag });
+                hashtag.selected = false;
+                setHashtags([...hashtags]);
+            } catch {
+                alert("Failed to remove hashtag.");
+            }
+        } else {
+            try {
+                axios.post(`${rootURL}/${username}/addHashtag`, { username: username, hashtag: hashtag.hashtag });
+                hashtag.selected = true;
+                setHashtags([...hashtags]);
+            } catch {
+                alert("Failed to add hashtag.");
+            }
+        }
+    };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -85,12 +129,25 @@ const Actor: React.FC = () => {
             {showActorPopup && (
                 <ActorPopup options={actorOptions} onSelect={handleSelectActor} onClose={() => setShowActorPopup(false)} />
             )}
+            <h1>Choose Your Hashtags!</h1>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 p-4">
+                {hashtags.map((hashtag) => (
+                    <div
+                        className="cursor-pointer px-3 py-2 bg-gray-200 text-center rounded hover:bg-gray-300"
+                        onClick={() => handleHashtagClick(hashtag)}
+                        style={hashtag.selected ? { color: "blue" } : { color: "black" }} // Fix: Declare the color variable
+                    >
+                        #{hashtag.hashtag}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 
 const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) => {
     return (
+
         <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-4 rounded-lg">
                 <h3 className="text-lg font-bold">Select an Actor</h3>
@@ -103,7 +160,9 @@ const ActorPopup: React.FC<ActorPopupProps> = ({ options, onSelect, onClose }) =
                 </ul>
                 <button className="mt-4 px-4 py-2 bg-red-500 text-white rounded" onClick={onClose}>Close</button>
             </div>
+
         </div>
+
     );
 };
 

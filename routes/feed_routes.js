@@ -257,7 +257,7 @@ LEFT JOIN tweet_hashtags tw ON tw.hashtag = r.destination
 LEFT JOIN posts p ON po.post_id = p.post_id AND po.post_id IS NOT NULL
 LEFT JOIN tweets t ON tw.id = t.id AND tw.id IS NOT NULL
 LEFT JOIN users u ON p.author_id = u.user_id AND po.post_id IS NOT NULL
-WHERE source = 1 AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
+WHERE source = ${req.session.user_id} AND destination REGEXP '^[^0-9]+$' ORDER BY score DESC;`;
 
   try {
     const result = await db.send_sql(getPosts);
